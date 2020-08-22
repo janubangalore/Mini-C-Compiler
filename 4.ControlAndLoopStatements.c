@@ -1,7 +1,7 @@
 #include<stdio.h>
 int main()
 {
-	int a=100;
+	inta=100;
 	for(i=1;i<20;i++) {
 		printf("%d", i);
 	}
