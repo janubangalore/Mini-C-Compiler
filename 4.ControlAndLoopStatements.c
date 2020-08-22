@@ -2,7 +2,7 @@
 int main()
 {
 	int a=100;
-	for(int i=1;i<20;i++) {
+	for(i=1;i<20;i++) {
 		printf("%d", i);
 	}
 	if(a<20) {
