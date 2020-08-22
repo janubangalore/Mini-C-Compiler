@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
-int var=0,i,nc=0,cLine=0,flag=0;
+int var=0,i,nc=0,commLine=0,flag=0;
 int lineNumber=1;
 int cBrac=0;
 
-FILE *symbol,*constants;
-char *comment,*inputFile, s_comment[1000];
+FILE *Smbl,*Cnst;						// Smbl for symbol, Cnst for constants
+char *Mul_comment,*inputFile, Sng_comment[1000];
 
 void insertToTable(char *yytext,char type);
-void displayComment(char *yytext);
+void storeMultiLineComment(char *yytext);
 void storeSingleLineComment(char *yytext);
 
 struct Node {
@@ -22,26 +22,26 @@ struct Node {
 
 %}
 
-digit  [0-9]
-letter  [a-zA-Z]
-keyword	"auto"|"break"|"case"|"char"|"const"|"continue"|"default"|"do"|"double"|"else"|"enum"|"extern"|"float"|"for"|"goto"|"if"|"int"|"long"|"register"|"return"|"short"|"signed"|"sizeof"|"static"|"struct"|"switch"|"typedef"|"union"|"unsigned"|"void"|"volatile"|"while"
-datatype "int"|"char"|"void"
-sign "signed"|"unsigned"
-modifiers "long"|"short"
-relational >|<|<=|>=|!=|==
-logical \&|\^|\~
-arithmatic \+|\-|\*|\/|\%
-puncuator \(|\)|\[|\]|\;|\,|\:|\.
 assignment =
-quote \'|\"|\\
-whitespace [ \t]+
-newline "\n"
-singlelinecomment (\/\/.*)
+arithmatic \+|\-|\*|\/|\%
+datatype "int"|"char"|"float"|"void"
+digit  [0-9]
+keyword	"auto"|"break"|"case"|"char"|"const"|"continue"|"default"|"do"|"double"|"else"|"enum"|"extern"|"float"|"for"|"goto"|"if"|"int"|"long"|"register"|"return"|"short"|"signed"|"sizeof"|"static"|"struct"|"switch"|"typedef"|"union"|"unsigned"|"void"|"volatile"|"while"
+letter  [a-zA-Z]
+logical \&|\^|\~
+modifiers "long"|"short"
 multilinecommentstart (\/\*)
 multilinecommentend (\*\/)
+newline "\n"
+puncuator \(|\)|\[|\]|\;|\,|\:|\.
+quote \'|\"|\\
+relational >|<|<=|>=|!=|==
+sign "signed"|"unsigned"
+singlelinecomment (\/\/.*)
+whitespace [ \t]+
 identifier ({letter}({letter}|{digit})*)|"_"({letter}|{digit})+ 
 
-%x DETECT_COMMENT
+%x COMMENT_DETECTION
 
 %%
 
@@ -121,13 +121,13 @@ L?\"(\\.|[^\\"])*	{
 {singlelinecomment} {storeSingleLineComment(yytext);}
 
 {multilinecommentstart}  {  
-                BEGIN(DETECT_COMMENT);
+                BEGIN(COMMENT_DETECTION);
                 nc++;
-                cLine++;
-                displayComment("\n\t");
+                commLine++;
+                storeMultiLineComment("\n\n");
             }
 
-<DETECT_COMMENT>{multilinecommentstart} { 
+<COMMENT_DETECTION>{multilinecommentstart} { 
                             nc++;
                             if(nc>1)
                             {
@@ -136,7 +136,7 @@ L?\"(\\.|[^\\"])*	{
                             }
                          }
 
-<DETECT_COMMENT>{multilinecommentend} {
+<COMMENT_DETECTION>{multilinecommentend} {
                             if(nc>0)
                                 nc--;
                             else
@@ -146,31 +146,31 @@ L?\"(\\.|[^\\"])*	{
                             	BEGIN(INITIAL);
                     }
 
-<DETECT_COMMENT>\n   {  
-                 cLine++;
+<COMMENT_DETECTION>\n   {  
+                 commLine++;
                  lineNumber++;
-                 displayComment("\n");
+                 storeMultiLineComment("\n");
                 }
 
-<DETECT_COMMENT>. {displayComment(yytext);}
+<COMMENT_DETECTION>. {storeMultiLineComment(yytext);}
 
 
 %%
 
 int main(int argc,char **argv)
 {
-	comment = (char*)malloc(100*sizeof(char));
+	Mul_comment = (char*)malloc(100*sizeof(char));
 	yyin=fopen(argv[1],"r");
 	inputFile=argv[1];
 
-	symbol=fopen("symbolTable.txt","w"); //File to write symbol table
-	fprintf(symbol,"\n Symbol Table:\n \t\tLexeme\t\t\t\tType\t\t\tAttribute Value\t\t\tLine Number\n");
+	Smbl=fopen("Symbol Table.txt","w");				 //File to write and save Symbol Table for given input
+	fprintf(Smbl,"\t\t\t\t\t\t\t\t\t\t Symbol Table:\n\n\n\n \t\tLine Number\t\t\tLexeme\t\t\t\tType\t\t\tAttribute Value\n");
 
-	constants=fopen("constantTable.txt","w"); // File to write constant table
-	fprintf(constants,"\n Constants Table:\n \t\tLexeme\t\t\tType\t\t\tAttribute Value\t\t\tLine Number\n");
+	Cnst=fopen("Constant Table.txt","w");				// File to write and Constant Table for given input
+	fprintf(Cnst,"\t\t\t\t\t\t\t\t\t\t Constants Table:\n\n\n\n \t\tLine Number\t\t\tLexeme\t\t\tType\t\t\tAttribute Value\n");
 
-	yyout=fopen("parsedTable.txt","w"); // File to write all token in source program
-	fprintf(yyout,"\n Table:\n \t\tLexeme\t\t\tToken\t\t\t\tAttribute Value\t\t\tLine Number\n");
+	yyout=fopen("Tokens List.txt","w");				// File to write all token in source program
+	fprintf(yyout,"\t\t\t\t\t\t\t\t\t\t Token List:\n\n\n\n \t\tLine Number\t\t\tLexeme\t\t\tToken\t\t\t\tAttribute Value\n");
 
 	yylex();
 	
@@ -183,49 +183,49 @@ int main(int argc,char **argv)
     	fprintf(yyout,"\n");
     	if(flag==1)
     	{
-			cLine = 0;
-			fprintf(yyout,"\n\nComment (%d lines):\n",cLine);
+			commLine = 0;
+			fprintf(yyout,"\n\nComment (%d lines):\n",commLine);
 			printf("%s : %d : Nested Comment\n",inputFile,lineNumber);
     	}
     	else
     	{
 	    	int i;
-			fprintf(yyout,"\n\nMultiLineComment (%d lines):",cLine);
-			fputs(comment,yyout);
-			fprintf(yyout,"\n\nSingleLineComment :\n");
-			fputs(s_comment,yyout);
-	   	}
+		fprintf(yyout,"\n\nMultiLineComment (%d lines):\n\n",commLine);
+		fputs(Mul_comment,yyout);
+		fprintf(yyout,"\n\nSingleLineComment :\n\n");
+		fputs(Sng_comment,yyout);
+	}
     
 	fclose(yyout);
-	fclose(symbol);
-	fclose(constants);	
+	fclose(Smbl);
+	fclose(Cnst);	
 }
 
 void storeSingleLineComment(char *yytext)
 {
-	int len = strlen(yytext);
-	int i, j=0;
-	char *temp;
-	temp = (char*)malloc((len+1)*sizeof(char));
-	for(i=2;yytext[i]!='\0';i++)
+	int length = strlen(yytext);
+	int i, j;
+	char *extra;
+	extra = (char*)malloc((length+1)*sizeof(char));
+	for(j=2,i=0;yytext[j]!='\0';j++,i++)
 	{
-		temp[j++] = yytext[i];
-	}
-	strcat(temp,"\n");
-	strcat(s_comment,temp);
+		extra[i] = yytext[j];
+	}	
+	strcat(extra,"\n");	//To print on new line
+	strcat(Sng_comment,extra);	//Copy to list of single comments
 }
-void displayComment(char *yytext)
+void storeMultiLineComment(char *yytext)
 {
-    int l1, l2;
-    char *temp;
+    int len1, len2;
+    char *extra;
 
-    l1 = strlen(comment);
-    l2 = strlen(yytext);
-    temp = (char*)malloc((l1+1)*sizeof(char));
-    strcpy(temp,comment);
-    comment = (char*)malloc((l1+l2+1)*sizeof(char));
-    strcat(temp,yytext);
-    strcpy(comment,temp);
+    len1 = strlen(Mul_comment);
+    len2 = strlen(yytext);
+    extra = (char*)malloc((len1+1)*sizeof(char));
+    strcpy(extra,Mul_comment);
+    Mul_comment = (char*)malloc((len1+len2+1)*sizeof(char));
+    strcat(extra,yytext);
+    strcpy(Mul_comment,extra);
 }
 void insertToTable(char *yytext,char type)
 {
@@ -237,7 +237,7 @@ void insertToTable(char *yytext,char type)
 
     switch(type)
     {
-		case 'd': strcpy(token,"Preprocessor Statement");break;
+	case 'd': strcpy(token,"Preprocessor Statement");break;
 
         case 'k': strcpy(token,"Keyword");break;
          
@@ -245,11 +245,11 @@ void insertToTable(char *yytext,char type)
        
         case 'a': strcpy(token,"Array");break;
 
-		case 'q' : strcpy(token,"Pointer");break;
+	case 'q': strcpy(token,"Pointer");break;
         
         case 'i': strcpy(token,"Identifier");break;
 	 	
-		case 'r': strcpy(token,"Relational Op");break;
+	case 'r': strcpy(token,"Relational Op");break;
 
         case 'p': strcpy(token,"Punctuator");break;
        	
@@ -308,21 +308,21 @@ void insertToTable(char *yytext,char type)
 
 	if(type =='i' || type == 'a' || type == 'q' || type=='j')
 	{	
-		fprintf(symbol,"\n%20s%30s%30d%35d",yytext,token,i,lineNumber);
+		fprintf(Smbl,"\n%25d%30s%30s%30d",lineNumber,yytext,token,i);
 	}
 	switch(type)
 	{		
-		case 'c' : fprintf(constants,"\n%20s%20s%30d%35d",yytext,"int",i,lineNumber);
+		case 'c' : fprintf(Cnst,"\n%25d%30s%20s%30d",lineNumber,yytext,"int",i);
 				    break;
 
-		case 'f' : fprintf(constants,"\n%20s%20s%30d%35d",yytext,"float",i,lineNumber);
+		case 'f' : fprintf(Cnst,"\n%25d%30s%20s%30d",lineNumber,yytext,"float",i);
 				    break;
 
-		case 'z' : fprintf(constants,"\n%20s%20s%30d%35d",yytext,"char",i,lineNumber);
+		case 'z' : fprintf(Cnst,"\n%25d%30s%20s%30d",lineNumber,yytext,"char",i);
 				    break;
 	}
 
-   	fprintf(yyout,"\n%20s%30s%30d%35d",yytext,token,i,lineNumber);
+   	fprintf(yyout,"\n%25d%30s%30s%30d",lineNumber,yytext,token,i);
 }
                                                                                                     
 int yywrap()
