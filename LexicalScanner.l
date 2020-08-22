@@ -140,7 +140,7 @@ L?\"(\\.|[^\\"])*	{
                             if(nc>0)
                                 nc--;
                             else
-			    				printf("%s : %d : */ found before /*\n",inputFile,lineNumber);
+			    				printf("%s : %d : */ found before //*\n",inputFile,lineNumber);
                             
                             if(nc==0)
                             	BEGIN(INITIAL);
