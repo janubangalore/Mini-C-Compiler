@@ -45,7 +45,10 @@ identifier ({letter}({letter}|{digit})*)|"_"({letter}|{digit})+
 
 %%
 
-^#([-a-zA-Z0-9.]|{relational}|{whitespace})* insertToTable(yytext,'d'); //preprocessor directive rule
+^#([-a-zA-Z0-9.]|{relational}|{whitespace})* {
+	insertToTable(yytext,'d'); //preprocessor directive rule
+	printf("%s : %d : Preprocessor rule found - %s\n",inputFile,lineNumber,yytext);
+	}
 
 {keyword} insertToTable(yytext,'k');
 {sign}?{whitespace}{modifiers}?{whitespace}{datatype} insertToTable(yytext,'k'); //keyword rule
@@ -84,8 +87,15 @@ identifier ({letter}({letter}|{digit})*)|"_"({letter}|{digit})+
 						insertToTable(temp,'q'); // pointer rule
 				}
 				
-{identifier} insertToTable(yytext,'i'); // variable rule
-{digit}+({letter}|{digit})+|"_" { printf("%s : %d : Invalid Identifier\n",inputFile,lineNumber); } // invalid identifier
+{identifier} {
+	insertToTable(yytext,'i'); // variable rule
+	printf("%s : %d : Identifier found - %s\n",inputFile,lineNumber,yytext);
+	}
+{digit}+ {
+	insertToTable(yytext,'c'); //integer constants rule
+	printf("%s : %d : Integer found - %s\n",inputFile,lineNumber,yytext);
+	}
+{digit}+({letter}|{digit})+|"_" { printf("%s : %d : Invalid Identifier - %s\n",inputFile,lineNumber,yytext); } // invalid identifier
 
                                         
 {relational} insertToTable(yytext,'r'); //operator rules
@@ -94,17 +104,22 @@ identifier ({letter}({letter}|{digit})*)|"_"({letter}|{digit})+
 {assignment} insertToTable(yytext,'e');
 {puncuator} insertToTable(yytext,'p');
 
-{digit}+ insertToTable(yytext,'c'); //integer constants rule 
-\"(.)*\" insertToTable(yytext,'s'); //string constants rule
+
+\"(.)*\" {
+	insertToTable(yytext,'s'); //string constants rule
+	printf("%s : %d : String constant found - %s\n",inputFile,lineNumber,yytext);
+	}
 L?\"(\\.|[^\\"])*	{
 				if(nc<=0) //invalid String
-				printf("%s : %d : String does not End\n",inputFile,lineNumber);	
+				printf("%s : %d : String does not end\n",inputFile,lineNumber);	
 			}
 [-+]?{digit}*\.?{digit}+([eE][-+]?{digit}+)? insertToTable(yytext,'f');  // float constant rule
 \'({letter}|{digit})\' {	char temp[50]={'\0'};
 							temp[0] = yytext[1];
+							printf("%s : %d : Character constant found - '%c'\n",inputFile,lineNumber,temp[0]);
 							insertToTable(temp,'z');  // character constant rule
 						}
+\'({letter}|{digit})({letter}|{digit})+\' {printf("%s : %d : Invalid Character constant - %s\n",inputFile,lineNumber,yytext);}
 
 {quote} ;
 {whitespace} ;
@@ -118,7 +133,10 @@ L?\"(\\.|[^\\"])*	{
 	insertToTable(yytext,'p');
 	 }
 
-{singlelinecomment} {storeSingleLineComment(yytext);}
+{singlelinecomment} {
+	printf("%s : %d : Single comment found\n",inputFile,lineNumber);
+	storeSingleLineComment(yytext);	
+	}
 
 {multilinecommentstart}  {  
                 BEGIN(COMMENT_DETECTION);
@@ -131,8 +149,8 @@ L?\"(\\.|[^\\"])*	{
                             nc++;
                             if(nc>1)
                             {
-								printf("%s : %d : Nested Comment\n",inputFile,lineNumber);
-                                flag = 1;
+								printf("%s : %d : Nested Comment found\n",inputFile,lineNumber);
+                                flag++;
                             }
                          }
 
@@ -140,10 +158,12 @@ L?\"(\\.|[^\\"])*	{
                             if(nc>0)
                                 nc--;
                             else
-			    				printf("%s : %d : */ found before //*\n",inputFile,lineNumber);
+			    	printf("%s : %d : Error:Closing comment found before opening\n",inputFile,lineNumber);
                             
-                            if(nc==0)
+                            if(nc==0){
+				printf("%s : %d : Multi-line comment found\n",inputFile,lineNumber);
                             	BEGIN(INITIAL);
+			    }
                     }
 
 <COMMENT_DETECTION>\n   {  
@@ -175,17 +195,17 @@ int main(int argc,char **argv)
 	yylex();
 	
     	if(nc!=0)
-    		printf("%s : %d : Comment Does Not End\n",inputFile,lineNumber);
+    		printf("%s : %d : Comment does not end\n",inputFile,lineNumber);
     		
     	if(cBrac!=0)
-    		printf("%s : %d : Unbalanced Parenthesis\n",inputFile,lineNumber);
+    		printf("%s : %d : Unbalanced Braces {}\n",inputFile,lineNumber);
     
     	fprintf(yyout,"\n");
-    	if(flag==1)
+    	if(flag > 0)
     	{
 			commLine = 0;
 			fprintf(yyout,"\n\nComment (%d lines):\n",commLine);
-			printf("%s : %d : Nested Comment\n",inputFile,lineNumber);
+			printf("\n%s : %d Nested comment(s) found\n",inputFile,flag);
     	}
     	else
     	{
