@@ -714,14 +714,14 @@ char *yytext;
 		char Value[100];
 		int LineNumber;
 		int Length;
-	}ST[1001];
+	}ST[10001];
 
 	struct constanttable
 	{
 		char name[100];
 		char type[100];
 		int length;
-	}CT[1001];
+	}CT[10001];
 
 	int hash(char *str)
 	{
@@ -729,9 +729,9 @@ char *yytext;
 		for(int i = 0 ; i < strlen(str) ; i++)
 		{
 			value = 10*value + (str[i] - 'A');
-			value = value % 1001;
+			value = value % 10001;
 			while(value < 0)
-				value = value + 1001;
+				value = value + 10001;
 		}
 		return value;
 	}
@@ -749,7 +749,7 @@ char *yytext;
 		}
 		else
 		{
-			for(int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for(int i = value + 1 ; i!=value ; i = (i+1)%10001)
 			{
 				if(strcmp(ST[i].Name,str)==0)
 				{
@@ -769,7 +769,7 @@ char *yytext;
 			return 1;
 		else
 		{
-			for(int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for(int i = value + 1 ; i!=value ; i = (i+1)%10001)
 			{
 				if(strcmp(CT[i].name,str)==0)
 				{
@@ -781,7 +781,7 @@ char *yytext;
 	}
 	void insertSTline(char *str1, int line)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		for(int i = 0 ; i < 10001 ; i++)
 		{
 			if(strcmp(ST[i].Name,str1)==0)
 			{
@@ -810,7 +810,7 @@ char *yytext;
 
 			int pos = 0;
 
-			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for (int i = value + 1 ; i!=value ; i = (i+1)%10001)
 			{
 				if(ST[i].Length == 0)
 				{
@@ -827,7 +827,7 @@ char *yytext;
 
 	void insertSTtype(char *str1, char *str2)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		for(int i = 0 ; i < 10001 ; i++)
 		{
 			if(strcmp(ST[i].Name,str1)==0)
 			{
@@ -838,7 +838,7 @@ char *yytext;
 
 	void insertSTvalue(char *str1, char *str2)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		for(int i = 0 ; i < 10001 ; i++)
 		{
 			if(strcmp(ST[i].Name,str1)==0)
 			{
@@ -865,7 +865,7 @@ char *yytext;
 
 			int pos = 0;
 
-			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for (int i = value + 1 ; i!=value ; i = (i+1)%10001)
 			{
 				if(CT[i].length == 0)
 				{
@@ -882,18 +882,18 @@ char *yytext;
 
 	void printST()
 	{
-		printf("%10s | %15s | %10s | %10s | %10s\n","SYMBOL", "CLASS", "TYPE","VALUE", "LINE NO");
-		for(int i=0;i<81;i++) {
+		printf("%15s | %20s | %15s | %15s | %15s\n","SYMBOL", "CLASS", "TYPE","VALUE", "LINE NO");
+		for(int i=0;i<100;i++) {
 			printf("-");
 		}
 		printf("\n");
-		for(int i = 0 ; i < 1001 ; i++)
+		for(int i = 0 ; i < 10001 ; i++)
 		{
 			if(ST[i].length == 0)
 			{
 				continue;
 			}
-			printf("%10s | %15s | %10s | %10s | %10d\n",ST[i].Name, ST[i].Class, ST[i].Type, ST[i].Value, ST[i].LineNumber);
+			printf("%15s | %20s | %15s | %15s | %10d\n",ST[i].Name, ST[i].Class, ST[i].Type, ST[i].Value, ST[i].LineNumber);
 		}
     }
 
@@ -905,7 +905,7 @@ char *yytext;
 			printf("-");
 		}
 		printf("\n");
-		for(int i = 0 ; i < 1001 ; i++)
+		for(int i = 0 ; i < 10001 ; i++)
 		{
 			if(CT[i].length == 0)
 				continue;
