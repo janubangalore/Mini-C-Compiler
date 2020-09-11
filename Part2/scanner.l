@@ -3,6 +3,7 @@
 	#include <string.h>
 	#include "y.tab.h"
 
+	//@Shreeraksha - Change the colors if you need.
 	#define ANSI_COLOR_RED		"\x1b[31m"
 	#define ANSI_COLOR_GREEN	"\x1b[32m"
 	#define ANSI_COLOR_YELLOW	"\x1b[33m"
@@ -11,14 +12,14 @@
 	#define ANSI_COLOR_CYAN		"\x1b[36m"
 	#define ANSI_COLOR_RESET	"\x1b[0m"
 
-	struct symboltable
+	struct SymbolTable
 	{
-		char name[100];
-		char class[100];
-		char type[100];
-		char value[100];
-		int lineno;
-		int length;
+		char Name[100];
+		char Class[100];
+		char Type[100];
+		char Value[100];
+		int LineNumber;
+		int Length;
 	}ST[1001];
 
 	struct constanttable
@@ -48,7 +49,7 @@
 		{
 			return 0;
 		}
-		else if(strcmp(ST[value].name,str)==0)
+		else if(strcmp(ST[value].Name,str)==0)
 		{	
 			return 1;
 		}
@@ -56,7 +57,7 @@
 		{
 			for(int i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
-				if(strcmp(ST[i].name,str)==0)
+				if(strcmp(ST[i].Name,str)==0)
 				{
 					return 1;
 				}
@@ -88,9 +89,9 @@
 	{
 		for(int i = 0 ; i < 1001 ; i++)
 		{
-			if(strcmp(ST[i].name,str1)==0)
+			if(strcmp(ST[i].Name,str1)==0)
 			{
-				ST[i].lineno = line;
+				ST[i].LineNumber = line;
 			}
 		}
 	}
@@ -106,9 +107,9 @@
 			int value = hash(str1);
 			if(ST[value].length == 0)
 			{
-				strcpy(ST[value].name,str1);
-				strcpy(ST[value].class,str2);
-				ST[value].length = strlen(str1);
+				strcpy(ST[value].Name,str1);
+				strcpy(ST[value].Class,str2);
+				ST[value].Length = strlen(str1);
 				insertSTline(str1,yylineno);
 				return;
 			}
@@ -117,16 +118,16 @@
 
 			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
-				if(ST[i].length == 0)
+				if(ST[i].Length == 0)
 				{
 					pos = i;
 					break;
 				}
 			}
 
-			strcpy(ST[pos].name,str1);
-			strcpy(ST[pos].class,str2);
-			ST[pos].length = strlen(str1);
+			strcpy(ST[pos].Name,str1);
+			strcpy(ST[pos].Class,str2);
+			ST[pos].Length = strlen(str1);
 		}
 	}
 
@@ -134,9 +135,9 @@
 	{
 		for(int i = 0 ; i < 1001 ; i++)
 		{
-			if(strcmp(ST[i].name,str1)==0)
+			if(strcmp(ST[i].Name,str1)==0)
 			{
-				strcpy(ST[i].type,str2);
+				strcpy(ST[i].Type,str2);
 			}
 		}
     }
@@ -145,9 +146,9 @@
 	{
 		for(int i = 0 ; i < 1001 ; i++)
 		{
-			if(strcmp(ST[i].name,str1)==0)
+			if(strcmp(ST[i].Name,str1)==0)
 			{
-				strcpy(ST[i].value,str2);
+				strcpy(ST[i].Value,str2);
 			}
 		}
 	}
@@ -198,7 +199,7 @@
 			{
 				continue;
 			}
-			printf("%10s | %15s | %10s | %10s | %10d\n",ST[i].name, ST[i].class, ST[i].type, ST[i].value, ST[i].lineno);
+			printf("%10s | %15s | %10s | %10s | %10d\n",ST[i].Name, ST[i].Class, ST[i].Type, ST[i].Value, ST[i].LineNumber);
 		}
     }
 
