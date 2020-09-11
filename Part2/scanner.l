@@ -84,6 +84,16 @@
 			return 0;
 		}
 	}
+	void insertSTline(char *str1, int line)
+	{
+		for(int i = 0 ; i < 1001 ; i++)
+		{
+			if(strcmp(ST[i].name,str1)==0)
+			{
+				ST[i].lineno = line;
+			}
+		}
+	}
 
 	void insertST(char *str1, char *str2)
 	{
@@ -142,17 +152,7 @@
 		}
 	}
 
-	void insertSTline(char *str1, int line)
-	{
-		for(int i = 0 ; i < 1001 ; i++)
-		{
-			if(strcmp(ST[i].name,str1)==0)
-			{
-				ST[i].lineno = line;
-			}
-		}
-	}
-
+	
 	void insertCT(char *str1, char *str2)
 	{
 		if(lookupCT(str1))
