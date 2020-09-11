@@ -45,7 +45,7 @@
 	int lookupST(char *str)
 	{
 		int value = hash(str);
-		if(ST[value].length == 0)
+		if(ST[value].Length == 0)
 		{
 			return 0;
 		}
@@ -105,7 +105,7 @@
 		else
 		{
 			int value = hash(str1);
-			if(ST[value].length == 0)
+			if(ST[value].Length == 0)
 			{
 				strcpy(ST[value].Name,str1);
 				strcpy(ST[value].Class,str2);
@@ -195,7 +195,7 @@
 		printf("\n");
 		for(int i = 0 ; i < 10001 ; i++)
 		{
-			if(ST[i].length == 0)
+			if(ST[i].Length == 0)
 			{
 				continue;
 			}
