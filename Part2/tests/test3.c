@@ -1,8 +1,8 @@
 #include <stdio.h>
 int main()
 {
-   int var1, var2;
-   if (var1 !=var2)
+   int var1,var2;
+   if (var1!=var2)
    {
      if(val1>0)
       printf("Var1 is positive");
@@ -21,7 +21,15 @@ int main()
    {
 	printf("var1 is equal to var2\n");
    }
-   return 0;
-    
     //Nested if else conditon
+       int a=10,c=0;
+	while(a>0)
+	{
+		while(a>5)
+		{
+		c+=a;                 
+		}
+	}
+    //Nested while
+return 0;
 }
