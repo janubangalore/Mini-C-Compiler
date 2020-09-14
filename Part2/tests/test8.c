@@ -1,11 +1,9 @@
 #include<stdio.h>
-#define NUM 5
+#define NUM 5  
 
 int main()
 {
 char A[] = "Happy Birthday";
-char *ptr;
-ptr=&A;
 unsigned a = 1;
 int c=NUM/a;
 return 0;
