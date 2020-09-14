@@ -1,5 +1,5 @@
 #include stdio.h>   
-//Invalid prepocessor directive
+//Invalid preprocessor directive
 int main()
 {
 printf("Hello");
