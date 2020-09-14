@@ -8,9 +8,10 @@ int main()
     {
        b+=a;
        a=a-1;
-    }
     /*
     This is Multi-Line
     Comment..
     */
+    }
+    return 0;
 }
