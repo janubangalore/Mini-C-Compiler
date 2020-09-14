@@ -1,4 +1,4 @@
-// Implicit Error that our Language doesn't support
+// Invalid identifier
 
 #include<stdio.h>
 
