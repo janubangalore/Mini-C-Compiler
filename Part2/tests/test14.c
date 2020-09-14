@@ -3,6 +3,6 @@
 #include<stdio.h>
 
 int main() {
-    char @hello;
-    @hello = 'c';
+    char 9ident;
+    9ident = 'c';
 }
