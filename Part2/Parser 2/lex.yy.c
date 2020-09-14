@@ -467,8 +467,8 @@ char *yytext;
 #line 1 "parser.l"
 #define INITIAL 0
 #line 9 "parser.l"
-int yylineno;
 #include <stdio.h>
+int yylineno, err;
 #line 473 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
@@ -1958,6 +1958,7 @@ int main()
 #endif
 #line 88 "parser.l"
 
+
 yywrap()
 {
 	return(1);
@@ -1965,23 +1966,58 @@ yywrap()
 
 multicomment()
 {
-	char c, c1;
-	while ((c = input()) != '*' && c != 0);
-	c1=input();
-	if(c=='*' && c1=='/')
-	{
-		c=0;
+	int count = 1;
+	char star = 'a', comment_end=EOF;
+	while(star!=EOF && count>0){
+		if(star == '\n'){
+			yylineno++;
+		}
+		else if(star == '/'){
+			comment_end = input();
+			if(comment_end == EOF){
+				err++;
+				printf("Reached EOF, but multiline comment isn't ended!");
+				break;
+			}
+			else if(comment_end == '*'){
+				count++;
+				star = input();
+			}
+			else{
+				star = comment_end;
+			}				
+	
+		}
+		else if(star == '*'){
+			comment_end = input();
+			if(comment_end == EOF){
+				err++;
+				printf("Reached EOF, but multiline comment isn't ended!");
+				break;
+			}
+			else if(comment_end == '/'){
+				count--;
+				if(count>0)	star = input();
+			}
+			else{
+				star = comment_end;
+			}
+		}
+		else{
+			star = input();	
+		}
 	}
-	if (c != 0)
-		putchar(c1);
+	if(star == EOF){
+		err++;
+		printf("Reached EOF, but multiline comment isn't ended!");
+	}
 }
 
 singlecomment()
 {
-	char c;
-	while(c=input()!='\n');
-	if(c=='\n')
-		c=0;
-	if(c!=0)
-		putchar(c);
+	char comment_end = '/';
+	while(comment_end != EOF && comment_end != '\n'){
+		comment_end = input();
+	}
+	if(comment_end == '\n')	yylineno++;
 }

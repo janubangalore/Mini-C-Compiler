@@ -20,6 +20,8 @@
 #include<string.h>
 char type[100];
 char temp[100];
+extern int yylineno;
+extern int err;
 %}
 
 %%
@@ -379,7 +381,6 @@ void showConstantTable()
     printf("%d\t%s\t\t< %s >\t\t\n",j+1,constantTable[j].token,constantTable[j].dataType);
 }
 
-int err=0;
 int main(int argc, char *argv[])
 {
 	yyin = fopen(argv[1], "r");

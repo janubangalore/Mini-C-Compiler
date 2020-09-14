@@ -56,9 +56,11 @@
 #include<string.h>
 char type[100];
 char temp[100];
+extern int yylineno;
+extern int err;
 
 /* Line 207 of glr.c  */
-#line 62 "y.tab.c"
+#line 64 "y.tab.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -87,7 +89,7 @@ static YYSTYPE yyval_default;
 /* Copy the second part of user declarations.  */
 
 /* Line 230 of glr.c  */
-#line 91 "y.tab.c"
+#line 93 "y.tab.c"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -315,22 +317,22 @@ static const signed char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,    28,    28,    29,    33,    34,    38,    39,    43,    44,
-      45,    46,    47,    48,    53,    54,    55,    56,    57,    58,
-      59,    63,    64,    68,    69,    70,    71,    75,    76,    77,
-      78,    79,    80,    84,    85,    89,    90,    91,    92,    96,
-      97,    98,   102,   103,   104,   108,   109,   110,   111,   112,
-     116,   117,   118,   122,   123,   127,   128,   132,   133,   137,
-     138,   142,   143,   147,   148,   152,   153,   157,   158,   159,
-     160,   161,   162,   163,   164,   165,   166,   167,   171,   172,
-     176,   180,   181,   185,   186,   190,   191,   195,   196,   200,
-     201,   202,   203,   204,   205,   206,   210,   211,   215,   219,
-     220,   221,   222,   223,   224,   225,   230,   234,   235,   239,
-     240,   241,   245,   246,   250,   251,   255,   259,   260,   261,
-     262,   263,   264,   265,   266,   267,   271,   272,   273,   277,
-     278,   282,   283,   284,   285,   286,   290,   291,   292,   293,
-     294,   295,   296,   300,   301,   305,   306,   310,   311,   315,
-     316,   320,   324,   325,   326,   327
+       0,    30,    30,    31,    35,    36,    40,    41,    45,    46,
+      47,    48,    49,    50,    55,    56,    57,    58,    59,    60,
+      61,    65,    66,    70,    71,    72,    73,    77,    78,    79,
+      80,    81,    82,    86,    87,    91,    92,    93,    94,    98,
+      99,   100,   104,   105,   106,   110,   111,   112,   113,   114,
+     118,   119,   120,   124,   125,   129,   130,   134,   135,   139,
+     140,   144,   145,   149,   150,   154,   155,   159,   160,   161,
+     162,   163,   164,   165,   166,   167,   168,   169,   173,   174,
+     178,   182,   183,   187,   188,   192,   193,   197,   198,   202,
+     203,   204,   205,   206,   207,   208,   212,   213,   217,   221,
+     222,   223,   224,   225,   226,   227,   232,   236,   237,   241,
+     242,   243,   247,   248,   252,   253,   257,   261,   262,   263,
+     264,   265,   266,   267,   268,   269,   273,   274,   275,   279,
+     280,   284,   285,   286,   287,   288,   292,   293,   294,   295,
+     296,   297,   298,   302,   303,   307,   308,   312,   313,   317,
+     318,   322,   326,   327,   328,   329
 };
 #endif
 
@@ -1301,91 +1303,91 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     {
         case 9:
 /* Line 868 of glr.c  */
-#line 44 "parser.y"
+#line 46 "parser.y"
     { constantInsert((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval), "string"); }
     break;
 
   case 10:
 /* Line 868 of glr.c  */
-#line 45 "parser.y"
+#line 47 "parser.y"
     { constantInsert((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval), "char"); }
     break;
 
   case 11:
 /* Line 868 of glr.c  */
-#line 46 "parser.y"
+#line 48 "parser.y"
     { constantInsert((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval), "float"); }
     break;
 
   case 12:
 /* Line 868 of glr.c  */
-#line 47 "parser.y"
+#line 49 "parser.y"
     { constantInsert((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval), "int"); }
     break;
 
   case 83:
 /* Line 868 of glr.c  */
-#line 185 "parser.y"
+#line 187 "parser.y"
     { strcpy(type, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval)); }
     break;
 
   case 84:
 /* Line 868 of glr.c  */
-#line 186 "parser.y"
+#line 188 "parser.y"
     { strcpy(temp, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval)); strcat(temp, " "); strcat(temp, type); strcpy(type, temp); }
     break;
 
   case 89:
 /* Line 868 of glr.c  */
-#line 200 "parser.y"
+#line 202 "parser.y"
     { ((*yyvalp)) = "void"; }
     break;
 
   case 90:
 /* Line 868 of glr.c  */
-#line 201 "parser.y"
+#line 203 "parser.y"
     { ((*yyvalp)) = "char"; }
     break;
 
   case 91:
 /* Line 868 of glr.c  */
-#line 202 "parser.y"
+#line 204 "parser.y"
     { ((*yyvalp)) = "short"; }
     break;
 
   case 92:
 /* Line 868 of glr.c  */
-#line 203 "parser.y"
+#line 205 "parser.y"
     { ((*yyvalp)) = "int"; }
     break;
 
   case 93:
 /* Line 868 of glr.c  */
-#line 204 "parser.y"
+#line 206 "parser.y"
     { ((*yyvalp)) = "long"; }
     break;
 
   case 94:
 /* Line 868 of glr.c  */
-#line 205 "parser.y"
+#line 207 "parser.y"
     { ((*yyvalp)) = "signed"; }
     break;
 
   case 95:
 /* Line 868 of glr.c  */
-#line 206 "parser.y"
+#line 208 "parser.y"
     { ((*yyvalp)) = "unsigned"; }
     break;
 
   case 99:
 /* Line 868 of glr.c  */
-#line 219 "parser.y"
+#line 221 "parser.y"
     { symbolInsert((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval), type); }
     break;
 
 
 /* Line 868 of glr.c  */
-#line 1389 "y.tab.c"
+#line 1391 "y.tab.c"
       default: break;
     }
 
@@ -3021,7 +3023,7 @@ yypdumpstack (yyGLRStack* yystackp)
 }
 #endif
 /* Line 2575 of glr.c  */
-#line 330 "parser.y"
+#line 332 "parser.y"
 
 #include"lex.yy.c"
 #include <ctype.h>
@@ -3074,7 +3076,6 @@ void showConstantTable()
     printf("%d\t%s\t\t< %s >\t\t\n",j+1,constantTable[j].token,constantTable[j].dataType);
 }
 
-int err=0;
 int main(int argc, char *argv[])
 {
 	yyin = fopen(argv[1], "r");
