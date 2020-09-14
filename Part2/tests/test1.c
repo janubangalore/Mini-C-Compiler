@@ -1,4 +1,8 @@
 #include<stdio.h>
+int multi(int b)
+{
+return 3*b;
+}
 
 int main()
 {
@@ -13,5 +17,6 @@ int main()
     Comment..
     */
     }
+    int x=multi(b); //Function call
     return 0;
 }
