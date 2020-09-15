@@ -99,6 +99,7 @@ multicomment()
 	while(star!=EOF && count>0){
 		if(star == '\n'){
 			yylineno++;
+			star = input();
 		}
 		else if(star == '/'){
 			comment_end = input();
