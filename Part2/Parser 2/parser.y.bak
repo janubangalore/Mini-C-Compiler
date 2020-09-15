@@ -387,6 +387,7 @@ void showConstantTable()
 void SymbolInsert(char* tokenName, char* tokenType)
 {
 	strcpy(SymbolTable[s].token, tokenName);
+	strcpy(SymbolTable[s].tokenType, tokenType);
 	SymbolTable[s].boundary_begin = yylineno;
 	SymbolTable[s].boundary_end = -1;
 	SymbolTable[s].attributeNo = c+1;
@@ -396,8 +397,7 @@ void SymbolInsert(char* tokenName, char* tokenType)
 		if(strcmp(tokenType,"char")==0)		strcpy(tokenType,"string");
 		else					strcpy(tokenType,"array");
 	}
-	strcpy(array_dim,"");	
-	strcpy(SymbolTable[s].tokenType, tokenType);
+	strcpy(array_dim,"");
 	s++;
 }
 
