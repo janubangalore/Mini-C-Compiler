@@ -7,25 +7,25 @@ exp			[Ee][+-]?{digit}+
 
 %{
 #include <stdio.h>
-int yylineno, err;
+int yylineno = 1, err = 0;
 %}
 
 %%
 \n  	{ yylineno++; }
 "/*"	{ multicomment(); }
 "//"	{ singlecomment(); }
-"#include<"({alpha})*".h>" {}
-"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 					{ }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ }
+"#include<"({alpha})*".h>" {	printf("\nLine %d : Found header file\n", yylineno);	}
+"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", yylineno); }
+"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", yylineno); }
+"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", yylineno); }
 
-\"[^\n]*\" 									{ yylval = yytext; return STRING_CONSTANT; }
-\'{alpha}\' 								{ yylval = yytext; return CHAR_CONSTANT; }
-{digit}+    								{ yylval = yytext; return INT_CONSTANT; }
-({digit}+)\.({digit}+) 						{ yylval = yytext; return FLOAT_CONSTANT; }
+\"[^\n]*\" 			{ yylval = yytext; return STRING_CONSTANT; }
+\'{alpha}\' 			{ yylval = yytext; return CHAR_CONSTANT; }
+{digit}+    			{ yylval = yytext; return INT_CONSTANT; }
+({digit}+)\.({digit}+) 		{ yylval = yytext; return FLOAT_CONSTANT; }
 ({digit}+)\.({digit}+)([eE][-+]?[0-9]+)? 	{ yylval = yytext; return FLOAT_CONSTANT; }
 
-"sizeof"				{  return SIZEOF; }
+"sizeof"		{  return SIZEOF; }
 "++"			{  return INC_OP; }
 "--"			{  return DEC_OP; }
 "<<"			{  return LEFT_OP; }
@@ -58,30 +58,30 @@ int yylineno, err;
 "while"			{  return WHILE; }
 "break"			{  return BREAK; }
 "return"		{  return RETURN; }
-";"				{  return(';'); }
+";"			{  return(';'); }
 ("{")			{  return('{'); }
 ("}")			{  return('}'); }
-","				{  return(','); }
-":"				{  return(':'); }
-"="				{  return('='); }
-"("				{  return('('); }
-")"				{  return(')'); }
+","			{  return(','); }
+":"			{  return(':'); }
+"="			{  return('='); }
+"("			{  return('('); }
+")"			{  return(')'); }
 ("["|"<:")		{  return('['); }
 ("]"|":>")		{  return(']'); }
-"."				{  return('.'); }
-"&"				{  return('&'); }
-"!"				{  return('!'); }
-"~"				{  return('~'); }
-"-"				{  return('-'); }
-"+"				{  return('+'); }
-"*"				{  return('*'); }
-"/"				{  return('/'); }
-"%"				{  return('%'); }
-"<"				{  return('<'); }
-">"				{  return('>'); }
-"^"				{  return('^'); }
-"|"				{  return('|'); }
-"?"				{  return('?'); }
+"."			{  return('.'); }
+"&"			{  return('&'); }
+"!"			{  return('!'); }
+"~"			{  return('~'); }
+"-"			{  return('-'); }
+"+"			{  return('+'); }
+"*"			{  return('*'); }
+"/"			{  return('/'); }
+"%"			{  return('%'); }
+"<"			{  return('<'); }
+">"			{  return('>'); }
+"^"			{  return('^'); }
+"|"			{  return('|'); }
+"?"			{  return('?'); }
 {alpha}({alpha}|{digit})*    		{  yylval = yytext; return IDENTIFIER;  }
 [ \t\v\n\f]		{  }
 .			{ }
@@ -125,6 +125,7 @@ multicomment()
 				break;
 			}
 			else if(comment_end == '/'){
+				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", yylineno, count);
 				count--;
 				if(count>0)	star = input();
 			}
@@ -148,5 +149,8 @@ singlecomment()
 	while(comment_end != EOF && comment_end != '\n'){
 		comment_end = input();
 	}
-	if(comment_end == '\n')	yylineno++;
+	printf("\nLine %d : Detected single line comment\n", yylineno);
+	if(comment_end == '\n'){
+		yylineno++;
+	}
 }
