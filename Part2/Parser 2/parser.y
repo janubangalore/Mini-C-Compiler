@@ -357,7 +357,7 @@ void ConstantInsert(char* tokenName, char* DataType)
 	int j;
 	for(j=0; j<c; j++)
 	{
-		if(strcmp(constantTable[j].token, tokenName)==0)
+		if(strcmp(ConstantTable[j].token, tokenName)==0)
 			return;
 	}
   strcpy(ConstantTable[c].token, tokenName);
