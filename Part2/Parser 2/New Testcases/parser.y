@@ -43,10 +43,10 @@ function_definition
 
 fundamental_exp
 	: IDENTIFIER
-	| STRING_CONSTANT		{ ConstantInsert($1, "string"); }
-	| CHAR_CONSTANT     { ConstantInsert($1, "char"); }
-	| FLOAT_CONSTANT	  { ConstantInsert($1, "float"); }
-	| INT_CONSTANT			{ ConstantInsert($1, "int"); }
+	| STRING_CONSTANT		{ constantInsert($1, "string"); }
+	| CHAR_CONSTANT     { constantInsert($1, "char"); }
+	| FLOAT_CONSTANT	  { constantInsert($1, "float"); }
+	| INT_CONSTANT			{ constantInsert($1, "int"); }
 	| '(' expression ')'
 	;
 
@@ -218,7 +218,7 @@ declarator
 	;
 
 direct_declarator
-	: IDENTIFIER								{ SymbolInsert($1, type); }
+	: IDENTIFIER								{ symbolInsert($1, type); }
 	| '(' declarator ')'
 	| direct_declarator '[' constant_expression ']'
 	| direct_declarator '[' ']'
@@ -335,50 +335,50 @@ jump_statement
 #include <stdio.h>
 #include <string.h>
 
-struct Symbol
+struct symbol
 {
 	char token[100];	// Name of the token
 	char dataType[100];		// Date type: int, short int, long int, char etc
-}SymbolTable[100000], ConstantTable[100000];
+}symbolTable[100000], constantTable[100000];
 
 int i=0; // Number of symbols in the symbol table
 int c=0;
 
 //Insert function for symbol table
-void SymbolInsert(char* tokenName, char* DataType)
+void symbolInsert(char* tokenName, char* DataType)
 {
-  strcpy(SymbolTable[i].token, tokenName);
-  strcpy(SymbolTable[i].dataType, DataType);
+  strcpy(symbolTable[i].token, tokenName);
+  strcpy(symbolTable[i].dataType, DataType);
   i++;
 }
 
-void ConstantInsert(char* tokenName, char* DataType)
+void constantInsert(char* tokenName, char* DataType)
 {
 	int j;
 	for(j=0; j<c; j++)
 	{
-		if(strcmp(ConstantTable[j].token, tokenName)==0)
+		if(strcmp(constantTable[j].token, tokenName)==0)
 			return;
 	}
-  strcpy(ConstantTable[c].token, tokenName);
-  strcpy(ConstantTable[c].dataType, DataType);
+  strcpy(constantTable[c].token, tokenName);
+  strcpy(constantTable[c].dataType, DataType);
   c++;
 }
 
 void showSymbolTable()
 {
-  printf("\n------------SYMBOL TABLE---------------------\n\nS.NO\tTOKEN\t\tDATATYPE\n\n");
+  printf("\n------------Symbol Table---------------------\n\nSNo\tToken\t\tDatatype\n\n");
   int j;
   for(j=0;j<i;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,SymbolTable[j].token,SymbolTable[j].dataType);
+    printf("%d\t%s\t\t< %s >\t\t\n",j+1,symbolTable[j].token,symbolTable[j].dataType);
 }
 
 void showConstantTable()
 {
-  printf("\n------------CONSTANT TABLE---------------------\n\nS.NO\tCONSTANT\t\tDATATYPE\n\n");
+  printf("\n------------Constant Table---------------------\n\nSNo\tConstant\t\tDatatype\n\n");
   int j;
   for(j=0;j<c;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,ConstantTable[j].token,ConstantTable[j].dataType);
+    printf("%d\t%s\t\t< %s >\t\t\n",j+1,constantTable[j].token,constantTable[j].dataType);
 }
 
 int main(int argc, char *argv[])
@@ -386,9 +386,9 @@ int main(int argc, char *argv[])
 	yyin = fopen(argv[1], "r");
 	yyparse();
 	if(err==0)
-		printf("\nPARSING COMPLETE\n");
+		printf("\nParsing complete\n");
 	else
-		printf("\nPARSING FAILED\n");
+		printf("\nParsing failed\n");
 	fclose(yyin);
 
 	showSymbolTable();
