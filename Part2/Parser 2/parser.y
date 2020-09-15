@@ -388,7 +388,7 @@ int main(int argc, char *argv[])
 	if(err==0)
 		printf("\nPARSING COMPLETE\n");
 	else
-		printf("\nPARSING FAILED\n");
+		printf("\nParsing Failed\n");
 	fclose(yyin);
 
 	showSymbolTable();
