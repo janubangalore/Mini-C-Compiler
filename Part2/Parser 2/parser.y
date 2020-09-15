@@ -43,10 +43,10 @@ function_definition
 
 fundamental_exp
 	: IDENTIFIER
-	| STRING_CONSTANT		{ ConstantInsert($1, "string"); }
-	| CHAR_CONSTANT     { ConstantInsert($1, "char"); }
-	| FLOAT_CONSTANT	  { ConstantInsert($1, "float"); }
-	| INT_CONSTANT			{ ConstantInsert($1, "int"); }
+	| STRING_CONSTANT		{ ConstantInsert($1, "string",yylineno); }
+	| CHAR_CONSTANT     { ConstantInsert($1, "char",yylineno); }
+	| FLOAT_CONSTANT	  { ConstantInsert($1, "float",yylineno); }
+	| INT_CONSTANT			{ ConstantInsert($1, "int",yylineno); }
 	| '(' expression ')'
 	;
 
@@ -339,46 +339,54 @@ struct Symbol
 {
 	char token[100];	// Name of the token
 	char dataType[100];		// Date type: int, short int, long int, char etc
-}SymbolTable[100000], ConstantTable[100000];
+}SymbolTable[100000]; 
 
-int i=0; // Number of symbols in the symbol table
-int c=0;
+struct Constant
+{
+	char token[100];	//Name of constant;
+	char dataType[100];	//Datatype of constant
+	int lineNo;		//Line number in which it is detected
+	int attributeNo;	//Attribute number in list
+
+}ConstantTable[100000];
+
+
+int s=0; // Number of symbols in the symbol table
+int c=0; // Number of consant in the constant table
 
 //Insert function for symbol table
 void SymbolInsert(char* tokenName, char* DataType)
 {
-  strcpy(SymbolTable[i].token, tokenName);
-  strcpy(SymbolTable[i].dataType, DataType);
-  i++;
+  strcpy(SymbolTable[s].token, tokenName);
+  strcpy(SymbolTable[s].dataType, DataType);
+  s++;
 }
 
-void ConstantInsert(char* tokenName, char* DataType)
+void ConstantInsert(char* tokenName, char* datatype, int lineno)
 {
-	int j;
-	for(j=0; j<c; j++)
-	{
-		if(strcmp(ConstantTable[j].token, tokenName)==0)
-			return;
-	}
-  strcpy(ConstantTable[c].token, tokenName);
-  strcpy(ConstantTable[c].dataType, DataType);
-  c++;
+	strcpy(ConstantTable[c].token, tokenName);
+	strcpy(ConstantTable[c].dataType, datatype);
+	ConstantTable[c].lineNo = lineno;
+	ConstantTable[c].attributeNo = c+1;
+	c++;
 }
 
 void showSymbolTable()
 {
   printf("\n------------SYMBOL TABLE---------------------\n\nS.NO\tTOKEN\t\tDATATYPE\n\n");
   int j;
-  for(j=0;j<i;j++)
+  for(j=0;j<s;j++)
     printf("%d\t%s\t\t< %s >\t\t\n",j+1,SymbolTable[j].token,SymbolTable[j].dataType);
 }
 
 void showConstantTable()
 {
-  printf("\n------------CONSTANT TABLE---------------------\n\nS.NO\tCONSTANT\t\tDATATYPE\n\n");
-  int j;
-  for(j=0;j<c;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,ConstantTable[j].token,ConstantTable[j].dataType);
+	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* CONSTANT TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
+	printf("Attribute Number\t    Line number\t\tConstant value\t\tDataType\n\n");
+	int itr;
+	for(itr=0;itr<c;itr++){
+		printf("\t%d\t\t\t%d\t\t\t%s\t\t  %s\n",ConstantTable[itr].attributeNo,ConstantTable[itr].lineNo,ConstantTable[itr].token,ConstantTable[itr].dataType);
+	}
 }
 
 int main(int argc, char *argv[])
