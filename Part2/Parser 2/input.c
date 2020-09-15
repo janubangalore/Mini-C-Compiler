@@ -5,7 +5,7 @@ int main()
 	int h[5];
 	//Hello
 	char c = 'u';
-	int ii[4+a];
+	char ii[4+a];
 	/* Multi
 	line comment
 	*/
@@ -20,7 +20,7 @@ int main()
 		*/
 		printf("%d",a);
 		a--;
-		int b[8];
+		int b;
 		while(b>0)
 		{
 			printf("%d", a*b);

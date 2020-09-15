@@ -181,7 +181,7 @@ constant_expression
 	;
 
 declaration
-	: declaration_specifiers init_declarator_list ';'	 {printf("sec %s %d\n",$1,yylineno);	}
+	: declaration_specifiers init_declarator_list ';'
 	| error
 	;
 
@@ -360,7 +360,7 @@ struct Constant
 
 
 int s=0;	// Number of symbols in the symbol table
-int c=0;	// Number of consant in the constant table
+int c=0;	// Number of constant in the constant table
 
 // Function to insert value in Constant Table
 void ConstantInsert(char* tokenName, char* datatype)
@@ -387,17 +387,17 @@ void showConstantTable()
 void SymbolInsert(char* tokenName, char* tokenType)
 {
 	strcpy(SymbolTable[s].token, tokenName);
+	strcpy(SymbolTable[s].tokenType, tokenType);
 	SymbolTable[s].boundary_begin = yylineno;
 	SymbolTable[s].boundary_end = -1;
 	SymbolTable[s].attributeNo = c+1;
 	strcpy(SymbolTable[s-1].array_dimension,"N/A");
 	if(strcmp(array_dim, "")!=0){
 		strcpy(SymbolTable[s-1].array_dimension, array_dim);
-		if(strcmp(tokenType,"char")==0)		strcpy(tokenType,"string");
-		else					strcpy(tokenType,"array");
+		if(strcmp(SymbolTable[s-1].tokenType,"char")==0)		strcpy(SymbolTable[s-1].tokenType,"string");
+		else					strcpy(SymbolTable[s-1].tokenType,"array");
 	}
 	strcpy(array_dim,"");	
-	strcpy(SymbolTable[s].tokenType, tokenType);
 	s++;
 }
 
@@ -407,6 +407,9 @@ void showSymbolTable()
 	strcpy(SymbolTable[s-1].array_dimension,"N/A");
 	if(strcmp(array_dim, "")!=0){
 		strcpy(SymbolTable[s-1].array_dimension, array_dim);
+		if(strcmp(SymbolTable[s-1].tokenType,"char")==0)
+			strcpy(SymbolTable[s-1].tokenType,"string");
+		else	strcpy(SymbolTable[s-1].tokenType,"array");
 	}
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
 	printf("Attribute Number\tBoundary lines\t\tName\t\tDataType\tArray dimension\n\n");
