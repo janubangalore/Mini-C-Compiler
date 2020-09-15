@@ -22,6 +22,7 @@ char type[100];
 char temp[100];
 extern int yylineno;
 extern int err;
+int nestingLevel;
 %}
 
 %%
@@ -43,10 +44,10 @@ function_definition
 
 fundamental_exp
 	: IDENTIFIER
-	| STRING_CONSTANT		{ ConstantInsert($1, "string",yylineno); }
-	| CHAR_CONSTANT     { ConstantInsert($1, "char",yylineno); }
-	| FLOAT_CONSTANT	  { ConstantInsert($1, "float",yylineno); }
-	| INT_CONSTANT			{ ConstantInsert($1, "int",yylineno); }
+	| STRING_CONSTANT		{ ConstantInsert($1, "string"); }
+	| CHAR_CONSTANT     { ConstantInsert($1, "char"); }
+	| FLOAT_CONSTANT	  { ConstantInsert($1, "float"); }
+	| INT_CONSTANT			{ ConstantInsert($1, "int"); }
 	| '(' expression ')'
 	;
 
@@ -202,7 +203,7 @@ type_specifier
 	: VOID			{ $$ = "void"; }
 	| CHAR			{ $$ = "char"; }
 	| SHORT			{ $$ = "short"; }
-	| INT				{ $$ = "int"; }
+	| INT			{ $$ = "int"; }
 	| LONG			{ $$ = "long"; }
 	| SIGNED		{ $$ = "signed"; }
 	| UNSIGNED	{ $$ = "unsigned"; }
@@ -218,7 +219,7 @@ declarator
 	;
 
 direct_declarator
-	: IDENTIFIER								{ SymbolInsert($1, type); }
+	: IDENTIFIER								{  SymbolInsert($1, type); }
 	| '(' declarator ')'
 	| direct_declarator '[' constant_expression ']'
 	| direct_declarator '[' ']'
@@ -337,8 +338,13 @@ jump_statement
 
 struct Symbol
 {
-	char token[100];	// Name of the token
-	char dataType[100];		// Date type: int, short int, long int, char etc
+	char token[100];	//Name of the identifier
+	char tokenType[100];	//Type of identifier
+	int boundary_begin;
+	int boundary_end;
+	int nesting_level;
+	int attributeNo;	//Attribute number in list
+
 }SymbolTable[100000]; 
 
 struct Constant
@@ -351,34 +357,20 @@ struct Constant
 }ConstantTable[100000];
 
 
-int s=0; // Number of symbols in the symbol table
-int c=0; // Number of consant in the constant table
+int s=0;	// Number of symbols in the symbol table
+int c=0;	// Number of consant in the constant table
 
-//Insert function for symbol table
-void SymbolInsert(char* tokenName, char* DataType)
-{
-  strcpy(SymbolTable[s].token, tokenName);
-  strcpy(SymbolTable[s].dataType, DataType);
-  s++;
-}
-
-void ConstantInsert(char* tokenName, char* datatype, int lineno)
+// Function to insert value in Constant Table
+void ConstantInsert(char* tokenName, char* datatype)
 {
 	strcpy(ConstantTable[c].token, tokenName);
 	strcpy(ConstantTable[c].dataType, datatype);
-	ConstantTable[c].lineNo = lineno;
+	ConstantTable[c].lineNo = yylineno;
 	ConstantTable[c].attributeNo = c+1;
 	c++;
 }
 
-void showSymbolTable()
-{
-  printf("\n------------SYMBOL TABLE---------------------\n\nS.NO\tTOKEN\t\tDATATYPE\n\n");
-  int j;
-  for(j=0;j<s;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,SymbolTable[j].token,SymbolTable[j].dataType);
-}
-
+// Function to print values in Constant Table
 void showConstantTable()
 {
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* CONSTANT TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
@@ -388,6 +380,42 @@ void showConstantTable()
 		printf("\t%d\t\t\t%d\t\t\t%s\t\t  %s\n",ConstantTable[itr].attributeNo,ConstantTable[itr].lineNo,ConstantTable[itr].token,ConstantTable[itr].dataType);
 	}
 }
+
+// Function to insert value in Symbol Table
+void SymbolInsert(char* tokenName, char* tokenType)
+{
+	strcpy(SymbolTable[s].token, tokenName);
+	strcpy(SymbolTable[s].tokenType, tokenType);
+	SymbolTable[s].boundary_begin = yylineno;
+	SymbolTable[s].boundary_end = -1;
+	SymbolTable[s].nesting_level = nestingLevel;
+	SymbolTable[s].attributeNo = c+1;
+	s++;
+}
+
+// Function to print values in Symbol Table
+void showSymbolTable()
+{
+	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
+	printf("Attribute Number\tBoundary lines\t\tName\t\tDataType\n\n");
+	int itr;
+	for(itr=0;itr<s;itr++){
+		printf("\t%d\t\t    %d - %d\t\t%s\t\t  %s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType);
+	}
+}
+
+//Function to decide boundary size in Symbol List
+void BoundarySymbolTable()
+{
+	int itr;
+	for(itr = 0; itr < s; itr++){
+		if(SymbolTable[itr].nesting_level == nestingLevel && SymbolTable[itr].boundary_end==-1 ){
+			SymbolTable[itr].boundary_end = yylineno;
+		}
+	}
+	nestingLevel--;
+}
+
 
 int main(int argc, char *argv[])
 {
