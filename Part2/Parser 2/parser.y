@@ -335,24 +335,24 @@ jump_statement
 #include <stdio.h>
 #include <string.h>
 
-struct symbol
+struct Symbol
 {
 	char token[100];	// Name of the token
 	char dataType[100];		// Date type: int, short int, long int, char etc
-}symbolTable[100000], constantTable[100000];
+}SymbolTable[100000], ConstantTable[100000];
 
 int i=0; // Number of symbols in the symbol table
 int c=0;
 
 //Insert function for symbol table
-void symbolInsert(char* tokenName, char* DataType)
+void SymbolInsert(char* tokenName, char* DataType)
 {
-  strcpy(symbolTable[i].token, tokenName);
-  strcpy(symbolTable[i].dataType, DataType);
+  strcpy(SymbolTable[i].token, tokenName);
+  strcpy(SymbolTable[i].dataType, DataType);
   i++;
 }
 
-void constantInsert(char* tokenName, char* DataType)
+void ConstantInsert(char* tokenName, char* DataType)
 {
 	int j;
 	for(j=0; j<c; j++)
@@ -360,25 +360,25 @@ void constantInsert(char* tokenName, char* DataType)
 		if(strcmp(constantTable[j].token, tokenName)==0)
 			return;
 	}
-  strcpy(constantTable[c].token, tokenName);
-  strcpy(constantTable[c].dataType, DataType);
+  strcpy(ConstantTable[c].token, tokenName);
+  strcpy(ConstantTable[c].dataType, DataType);
   c++;
 }
 
 void showSymbolTable()
 {
-  printf("\n------------Symbol Table---------------------\n\nSNo\tToken\t\tDatatype\n\n");
+  printf("\n------------SYMBOL TABLE---------------------\n\nS.NO\tTOKEN\t\tDATATYPE\n\n");
   int j;
   for(j=0;j<i;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,symbolTable[j].token,symbolTable[j].dataType);
+    printf("%d\t%s\t\t< %s >\t\t\n",j+1,SymbolTable[j].token,SymbolTable[j].dataType);
 }
 
 void showConstantTable()
 {
-  printf("\n------------Constant Table---------------------\n\nSNo\tConstant\t\tDatatype\n\n");
+  printf("\n------------CONSTANT TABLE---------------------\n\nS.NO\tCONSTANT\t\tDATATYPE\n\n");
   int j;
   for(j=0;j<c;j++)
-    printf("%d\t%s\t\t< %s >\t\t\n",j+1,constantTable[j].token,constantTable[j].dataType);
+    printf("%d\t%s\t\t< %s >\t\t\n",j+1,ConstantTable[j].token,ConstantTable[j].dataType);
 }
 
 int main(int argc, char *argv[])
@@ -386,9 +386,9 @@ int main(int argc, char *argv[])
 	yyin = fopen(argv[1], "r");
 	yyparse();
 	if(err==0)
-		printf("\nParsing complete\n");
+		printf("\nPARSING COMPLETE\n");
 	else
-		printf("\nParsing failed\n");
+		printf("\nPARSING FAILED\n");
 	fclose(yyin);
 
 	showSymbolTable();
