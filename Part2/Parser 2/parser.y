@@ -20,9 +20,10 @@
 #include<string.h>
 char type[100];
 char temp[100];
+char param_list[300];
+char array_dim[100];
 extern int yylineno;
 extern int err;
-int nestingLevel;
 %}
 
 %%
@@ -221,10 +222,11 @@ declarator
 direct_declarator
 	: IDENTIFIER								{  SymbolInsert($1, type); }
 	| '(' declarator ')'
-	| direct_declarator '[' constant_expression ']'
-	| direct_declarator '[' ']'
-	| direct_declarator '(' parameter_type_list ')'
-	| direct_declarator '(' identifier_list ')'
+	| direct_declarator '[' constant_expression ']'		{	strcpy(array_dim,$3);	
+									array_dim[strlen(array_dim)-1]='\0';	}
+	| direct_declarator '[' ']'	{	strcpy(array_dim,"0");	}
+	| direct_declarator '(' parameter_type_list ')'		
+	| direct_declarator '(' identifier_list ')'			
 	| direct_declarator '(' ')'
 	;
 
@@ -234,12 +236,12 @@ parameter_type_list
 	;
 
 parameter_list
-	: parameter_declaration
-	| parameter_list ',' parameter_declaration
+	: parameter_declaration		{ strcpy(param_list,$1);	}
+	| parameter_list ',' parameter_declaration	{ strcat(param_list, ", "); strcat(param_list, $1);	}
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator
+	: declaration_specifiers declarator		
 	| declaration_specifiers abstract_declarator
 	| declaration_specifiers
 	;
@@ -340,10 +342,10 @@ struct Symbol
 {
 	char token[100];	//Name of the identifier
 	char tokenType[100];	//Type of identifier
-	int boundary_begin;
-	int boundary_end;
-	int nesting_level;
+	int boundary_begin;	//Beginning of scope
+	int boundary_end;	//End of scope
 	int attributeNo;	//Attribute number in list
+	char array_dimension[100];
 
 }SymbolTable[100000]; 
 
@@ -388,32 +390,28 @@ void SymbolInsert(char* tokenName, char* tokenType)
 	strcpy(SymbolTable[s].tokenType, tokenType);
 	SymbolTable[s].boundary_begin = yylineno;
 	SymbolTable[s].boundary_end = -1;
-	SymbolTable[s].nesting_level = nestingLevel;
 	SymbolTable[s].attributeNo = c+1;
+	strcpy(SymbolTable[s-1].array_dimension,"N/A");
+	if(strcmp(array_dim, "")!=0){
+		strcpy(SymbolTable[s-1].array_dimension, array_dim);
+	}
+	strcpy(array_dim,"");
 	s++;
 }
 
 // Function to print values in Symbol Table
 void showSymbolTable()
 {
+	strcpy(SymbolTable[s-1].array_dimension,"N/A");
+	if(strcmp(array_dim, "")!=0){
+		strcpy(SymbolTable[s-1].array_dimension, array_dim);
+	}
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number\tBoundary lines\t\tName\t\tDataType\n\n");
+	printf("Attribute Number\tBoundary lines\t\tName\t\tDataType\tArray dimension\n\n");
 	int itr;
 	for(itr=0;itr<s;itr++){
-		printf("\t%d\t\t    %d - %d\t\t%s\t\t  %s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType);
+		printf("\t%d\t\t    %d - %d\t\t%s\t\t  %s\t\t    %s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension);
 	}
-}
-
-//Function to decide boundary size in Symbol List
-void BoundarySymbolTable()
-{
-	int itr;
-	for(itr = 0; itr < s; itr++){
-		if(SymbolTable[itr].nesting_level == nestingLevel && SymbolTable[itr].boundary_end==-1 ){
-			SymbolTable[itr].boundary_end = yylineno;
-		}
-	}
-	nestingLevel--;
 }
 
 

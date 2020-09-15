@@ -1,12 +1,11 @@
 #include<stdio.h>
-#define rr4re 5
-#define dd 99
-
 int main()
 {
 	int a = 5;
-	// Single comment
+	int h[5];
+	//Hello
 	char c = 'u';
+	int ii[4+a];
 	/* Multi
 	line comment
 	*/
@@ -21,7 +20,7 @@ int main()
 		*/
 		printf("%d",a);
 		a--;
-		int b = 4;
+		int b[8];
 		while(b>0)
 		{
 			printf("%d", a*b);
