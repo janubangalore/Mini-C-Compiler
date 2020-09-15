@@ -400,6 +400,7 @@ yyerror(char *s)
 {
 	err=1;
 	printf("\nLine %d : %s\n", (yylineno), s);
+	printf("Parsing aborted!");
 	showSymbolTable();
 	showConstantTable();
 	exit(0);
