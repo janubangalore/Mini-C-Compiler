@@ -418,9 +418,11 @@ void SymbolInsert(char* tokenName, char* tokenType)
 void ParamListInsert(int lineNo)
 {
 
+	printf("Done %d\n",lineNo);
 	int itr;
 	for(itr=0;itr<s;itr++){
 		if(SymbolTable[itr].lineNo == lineNo){
+			printf("Yeah\n");
 			strcpy(SymbolTable[itr].paramList,param_list);
 			strcpy(param_list,"");
 			break;

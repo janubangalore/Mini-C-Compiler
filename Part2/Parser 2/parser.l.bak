@@ -50,7 +50,7 @@ int yylineno = 1, err = 0;
 "char*"			{  yylval = yytext; return CHAR_; }
 "short"			{  yylval = yytext; return SHORT; }
 "int"			{  yylval = yytext; return INT; }
-"float"			{  yylval = yytext; return FLOAT; }
+"float"			{  yylval = yytext; return printf("HH"); FLOAT; }
 "double"		{  yylval = yytext; return DOUBLE; }
 "int*"			{  yylval = yytext; return INT_; }
 "long"			{  yylval = yytext; return LONG; }
