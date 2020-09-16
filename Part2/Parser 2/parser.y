@@ -424,6 +424,8 @@ void ScopeAndParamInsert(int lineNo)
 	for(itr=0;itr<s;itr++){
 		if(SymbolTable[itr].boundary_end == -1){
 			if(insert==1){
+				if(strlen(param_list) > 2 && param_list[strlen(param_list)-2] == ',')	param_list[strlen(param_list)-2] = '\0';
+
 				strcpy(SymbolTable[itr].paramList,param_list);
 				insert = 0;
 				strcpy(param_list,"");
@@ -444,11 +446,11 @@ void showSymbolTable()
 		if(strcmp(SymbolTable[s-1].tokenType,"pointer")==0)		strcpy(SymbolTable[s-1].tokenType,"array of pointers");
 		else				strcpy(SymbolTable[s-1].tokenType,"array");
 	}
-	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number  Boundary(line no)\tName\tDataType\t\tArray dimension\t\t\tParameter List\n\n");
+	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
+	printf("Attribute Number\tBoundary(line no)   Identifier Name\tDataType         \tArray dimension\t\tParameter List\n\n");
 	int itr;
 	for(itr=0;itr<s;itr++){
-		printf("\t%d\t    %d - %d\t\t%s\t  %s\t\t\t\t%s\t\t\t\t%s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
+		printf("\t%-20d %-3d -  %-13d %-15s %-24s %-23s %-40s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
 	}
 }
 
