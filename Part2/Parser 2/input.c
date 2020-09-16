@@ -1,4 +1,5 @@
 #include<stdio.h>
+
 void lng(char ma, int t){
 	int y=9;
 }

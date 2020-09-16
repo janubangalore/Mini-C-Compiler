@@ -15,8 +15,8 @@ int yylineno = 1, err = 0;
 "/*"	{ multicomment(); }
 "//"	{ singlecomment(); }
 "#include<"({alpha})*".h>" {	printf("\nLine %d : Found header file\n", yylineno);	}
-"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", yylineno); }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", yylineno); }
+"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", yylineno);  }
+"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", yylineno);  }
 "#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", yylineno); }
 
 \"[^\n]*\" 			{ yylval = yytext; return STRING_CONSTANT; }

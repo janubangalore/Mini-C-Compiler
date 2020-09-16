@@ -39,8 +39,8 @@ global_declaration
 	;
 
 function_definition		
-	: declaration_specifiers declarator compound_statement		{	printf("%s %d\n",param_list, yylineno);		ParamListInsert(yylineno);	 }
-	| declarator compound_statement		{	printf("%s %d\n",param_list, yylineno);		ParamListInsert(yylineno);	 }
+	: declaration_specifiers declarator compound_statement		{		ScopeAndParamInsert(yylineno);	 }
+	| declarator compound_statement		{		ScopeAndParamInsert(yylineno);	 }
 	;
 
 fundamental_exp
@@ -351,7 +351,8 @@ struct Symbol
 {
 	char token[100];	//Name of the identifier
 	char tokenType[100];	//Type of identifier
-	int lineNo;		//Line number in which it is detected
+	int boundary_begin;	//Beginning of scope
+	int boundary_end;	//End of scope
 	char paramList[200];	//Parameter list
 	int attributeNo;	//Attribute number in list
 	char array_dimension[100];
@@ -400,7 +401,8 @@ void SymbolInsert(char* tokenName, char* tokenType)
 		strcpy(tokenType,"pointer");
 	}
 	strcpy(SymbolTable[s].tokenType, tokenType);
-	SymbolTable[s].lineNo = yylineno;
+	SymbolTable[s].boundary_begin = yylineno;
+	SymbolTable[s].boundary_end = -1;
 	SymbolTable[s].attributeNo = c+1;
 	strcpy(SymbolTable[s].paramList, "N/A");
 	strcpy(SymbolTable[s-1].array_dimension,"N/A");
@@ -415,15 +417,19 @@ void SymbolInsert(char* tokenName, char* tokenType)
 }
 
 //Function to to add Parameter List
-void ParamListInsert(int lineNo)
+void ScopeAndParamInsert(int lineNo)
 {
 
-	int itr;
+	int itr, insert = 1;
 	for(itr=0;itr<s;itr++){
-		if(SymbolTable[itr].lineNo == lineNo){
-			strcpy(SymbolTable[itr].paramList,param_list);
-			strcpy(param_list,"");
-			break;
+		if(SymbolTable[itr].boundary_end == -1){
+			if(insert==1){
+				strcpy(SymbolTable[itr].paramList,param_list);
+				insert = 0;
+				strcpy(param_list,"");
+				strcpy(SymbolTable[itr].tokenType,"function");
+			}
+			SymbolTable[itr].boundary_end = lineNo;
 		}
 	}
 }
@@ -439,10 +445,10 @@ void showSymbolTable()
 		else				strcpy(SymbolTable[s-1].tokenType,"array");
 	}
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number  Line No\tName\tDataType\t\tArray dimension\t\t\tParameter List\n\n");
+	printf("Attribute Number  Boundary(line no)\tName\tDataType\t\tArray dimension\t\t\tParameter List\n\n");
 	int itr;
 	for(itr=0;itr<s;itr++){
-		printf("\t%d\t    %d\t\t%s\t  %s\t\t\t\t%s\t\t\t\t%s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].lineNo,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
+		printf("\t%d\t    %d - %d\t\t%s\t  %s\t\t\t\t%s\t\t\t\t%s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
 	}
 }
 
