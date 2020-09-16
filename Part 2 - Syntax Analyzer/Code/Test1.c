@@ -1,3 +1,4 @@
+
 #include<stdio.h>
 int multi(int b)
 {
@@ -8,6 +9,13 @@ int main()
 {
     int a=10,b=0;
     char ch;//Single line comment
+    char str[20] = "Hello";
+    /* This is a nested 
+            /* multiline
+            comment*/
+            *
+        /
+    */ 
     while(a>0)
     {
        b+=a;

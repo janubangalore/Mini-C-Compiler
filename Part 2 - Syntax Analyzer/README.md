@@ -1,0 +1,36 @@
+# Syntax Analyzer
+
+## Execution
+
+### Windows
+```
+cd Code
+rm ./a
+lex SyntaxScanner.l
+yacc SyntaxParser.y
+gcc y.tab.c -w -o a
+./a <input c-filename>
+
+### Linux/Ubuntu
+```
+cd Code
+rm ./a.out
+lex SyntaxScanner.l
+yacc SyntaxParser.y
+gcc y.tab.c -ll -ly -w
+./a.out <input c-filename>
+```
+
+## Test Cases Execution
+
+### Windows
+```
+cd Code
+bash 'runfile(Windows).sh'
+```
+
+### Linux/Ubuntu
+```
+cd Code
+bash 'runfile(Linux).sh'
+```
