@@ -24,11 +24,12 @@ int main()
 		*/
 		printf("%d",a);
 		a--;
-		int* ii[4+a];
+		int* arr[4+a];
 		while(b>0)
 		{
 			printf("%d", a*b);
 			b--;
 		}
 	}
+	return 0;
 }
