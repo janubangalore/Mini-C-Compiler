@@ -1,6 +1,6 @@
 #include<stdio.h>
 
-struct node            //Structure Declaration
+struct 99node            //Structure Declaration
 {
    int a;
    char b;
