@@ -2,8 +2,8 @@
 A Mini C Compiler Project designed using Lex and Yacc as part of course : Compiler Design Lab (CO351)
 
 ### Compiler Design contains 4 phases
-1. [Lexical Analyser](https://github.com/Shree987/Mini-C-Compiler/tree/master/Part%201%20-%20Lexical%20Analyser)
-2. Syntax Analyzer 
+1. [Lexical Analyzer](https://github.com/Shree987/Mini-C-Compiler/tree/master/Part%201%20-%20Lexical%20Analyzer)
+2. [Syntax Analyzer](https://github.com/Shree987/Mini-C-Compiler/tree/master/Part%202%20-%20Syntax%20Analyzer)
 3. Semantic Analyzer
 4. Intermediate Code Generator 
 

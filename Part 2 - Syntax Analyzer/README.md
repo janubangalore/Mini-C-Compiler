@@ -5,6 +5,15 @@
 ### Windows
 ```
 cd Code
+rm a
+lex SyntaxScanner.l
+yacc SyntaxParser.y
+gcc y.tab.c -w -o a
+a <input c-filename>
+
+### Gitbash
+
+cd Code
 rm ./a
 lex SyntaxScanner.l
 yacc SyntaxParser.y
@@ -29,8 +38,16 @@ cd Code
 bash 'runfile(Windows).sh'
 ```
 
+### GitBash
+```
+cd Code
+bash 'runfile(GitBash).sh'
+
+```
+
 ### Linux/Ubuntu
 ```
 cd Code
 bash 'runfile(Linux).sh'
+
 ```

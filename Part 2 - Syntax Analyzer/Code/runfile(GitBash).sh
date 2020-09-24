@@ -1,8 +1,8 @@
 #!/bin/bash
-rm ./a.out
-yacc parser.y
-lex parser.l
-gcc y.tab.c -ll -ly -w -o a
+rm ./a
+lex SyntaxScanner.l
+yacc -dy SyntaxParser.y
+gcc y.tab.c -w -o a
 echo " "
 echo " "
 echo "==============================================================================================================="

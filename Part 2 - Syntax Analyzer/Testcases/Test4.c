@@ -1,7 +1,7 @@
 #include<stdio.h>
 
-struct node            //Structure Declaration
-{
+struct node [           //Structure Declaration
+
    int a;
    char b;
 };
