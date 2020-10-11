@@ -10,15 +10,17 @@ lex SyntaxScanner.l
 yacc SyntaxParser.y
 gcc y.tab.c -w -o a
 a <input c-filename>
+```
 
 ### Gitbash
-
+```
 cd Code
 rm ./a
 lex SyntaxScanner.l
 yacc SyntaxParser.y
 gcc y.tab.c -w -o a
 ./a <input c-filename>
+```
 
 ### Linux/Ubuntu
 ```
