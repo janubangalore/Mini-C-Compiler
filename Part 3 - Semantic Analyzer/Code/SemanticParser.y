@@ -1,6 +1,6 @@
 %nonassoc NO_ELSE
 %nonassoc ELSE
-%left '<' '>' '=' GE_OP LE_OP EQ_OP NE_OP
+%left '<' '>' '=' GE_OP LE_OP EQ_OP NE_OP 
 %left  '+'  '-'
 %left  '*'  '/' '%'
 %left  '|'
@@ -11,7 +11,7 @@
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token XOR_ASSIGN OR_ASSIGN TYPE_NAME DEF
 %token CHAR CHAR_ SHORT INT INT_ LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOID
-%token IF ELSE WHILE CONTINUE BREAK RETURN
+%token IF ELSE WHILE CONTINUE BREAK RETURN FOR STRUCT
 %start start_state
 %nonassoc UNARY
 %glr-parser
@@ -35,7 +35,25 @@ start_state
 
 global_declaration
 	: function_definition
+	| struct_definition
 	| declaration
+	;
+
+struct_definition		
+	: STRUCT struct_name '{' struct_members_declaration '}' ';'	{    StructureInsert("", 0);	}
+	;
+
+struct_name
+	: IDENTIFIER	{	StructureInsert($1, 1);	}
+	;
+
+struct_members_declaration
+	: struct_members_declaration struct_members ';'
+	| struct_members ';'
+	;
+
+struct_members
+	: type_specifier IDENTIFIER	{	StructureMemberInsert($2, $1);	}
 	;
 
 function_definition		
@@ -208,8 +226,9 @@ type_specifier
 	| INT			{ $$ = "int"; }
 	| INT_			{ $$ = "int*"; }
 	| LONG			{ $$ = "long"; }
+	| FLOAT			{ $$ = "float"; }
 	| SIGNED		{ $$ = "signed"; }
-	| UNSIGNED	{ $$ = "unsigned"; }
+	| UNSIGNED		{ $$ = "unsigned"; }
 	;
 
 type_specifier_list
@@ -332,6 +351,7 @@ selection_statement
 
 iteration_statement
 	: WHILE '(' expression ')' statement
+	: FOR '(' expression ';' expression ';' expression ')'
 	;
 
 jump_statement
@@ -368,9 +388,25 @@ struct Constant
 
 }ConstantTable[100000];
 
+struct StructureMembers{
+	char MemberName[100];	// Member name
+	char MemberType[100];	// Member type
+	int lineNo;		//Line number in which it is detected
+	struct StructureMembers *next;
+};
+
+struct Structure
+{
+	char name[100];		//Name of struct
+	int boundary_begin;	//Beginning of scope
+	int boundary_end;	//End of scope
+	struct StructureMembers *stm;
+
+}StructureTable[100000] = {"", 0, 0, NULL};
 
 int s=0;	// Number of symbols in the symbol table
 int c=0;	// Number of constant in the constant table
+int st=0;       // Number of structures declared
 
 // Function to insert value in Constant Table
 void ConstantInsert(char* tokenName, char* datatype)
@@ -457,6 +493,70 @@ void showSymbolTable()
 	}
 }
 
+// Function to insert struct in Structure Table
+void StructureInsert(char* structName, int flag){
+	if(flag == 0){
+		StructureTable[st].boundary_end = yylineno;
+		st++;
+		return ;
+	}
+	int itr;
+	for(itr = 0; itr < st; itr++){
+		if(strcmp(StructureTable[itr].name, structName)==0){
+			err++;
+			yyerror("Redeclaration of structure\n");
+			return;
+		}
+	}
+	strcpy(StructureTable[st].name, structName);
+	StructureTable[st].boundary_begin = yylineno;
+}
+
+// Function to insert structure members in Structure Table
+void StructureMemberInsert(char* name, char* type){
+	struct StructureMembers *m = malloc(sizeof(struct StructureMembers));
+	strcpy(m->MemberName, name);
+	strcpy(m->MemberType, type);
+	m->lineNo = yylineno;
+	m->next = NULL;
+	struct StructureMembers *ptr = StructureTable[st].stm;
+	if(ptr == NULL){
+		StructureTable[st].stm = m;
+		return ;
+	}
+	if(strcmp(ptr->MemberName, name)==0){
+		err++;
+		yyerror("Redeclaration of member of structure member\n");
+		return;
+	}
+	while(ptr->next != NULL){
+		if(strcmp((ptr->next)->MemberName, name)==0){
+			err++;
+			yyerror("Redeclaration of member of structure member\n");
+			return;
+		}
+		ptr = ptr->next;
+	}
+	ptr->next = m;
+}
+
+// Function to print values in Structure Table
+void showStructureTable()
+{
+	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* STRUCTURE TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
+	printf("Structure name\t   Boundary(line no)\t  Member name\t  Member type\t\tLine number\n\n");
+	int itr;
+	struct StructureMembers *ptr;
+	for(itr = 0; itr < st; itr++){
+		ptr = StructureTable[itr].stm;
+		while(ptr != NULL){
+			printf("\t%-15s %-3d -  %-13d %-18s %-18s %-3d\n",StructureTable[itr].name,StructureTable[itr].boundary_begin,StructureTable[itr].boundary_end,ptr->MemberName,ptr->MemberType,ptr->lineNo);
+			ptr = ptr->next;
+		}
+
+	}
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -470,6 +570,7 @@ int main(int argc, char *argv[])
 
 	showSymbolTable();
 	showConstantTable();
+	showStructureTable();
 	return 0;
 }
 extern char *yytext;
@@ -480,5 +581,6 @@ yyerror(char *s)
 	printf("\nPARSING FAILED\n");
 	showSymbolTable();
 	showConstantTable();
+	showStructureTable();
 	exit(0);
 }

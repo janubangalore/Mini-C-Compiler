@@ -62,6 +62,8 @@ int yylineno = 1, err = 0;
 "if"			{  return IF; }
 "else"			{  return ELSE; }
 "while"			{  return WHILE; }
+"for"			{  return FOR; }
+"struct"		{  return STRUCT; }
 "break"			{  return BREAK; }
 "return"		{  return RETURN; }
 ";"			{  return(';'); }
