@@ -18,6 +18,7 @@ int main()
 {
 	int a = 5;
 	int h[5];
+	a = a+2;
 	//Hello
 	char* c = 'u';
 	char* ii[4+a];
@@ -33,21 +34,22 @@ int main()
 		dd
 		*/
 		*/
+		int a;
 		printf("%d",a);
 		a--;
 		int* arr[4+a];
-		while(b>0)
+		while(a>0)
 		{
-			printf("%d", a*b);
-			b--;
+			printf("%d", a*a);
+			a--;
 		}
 	}
-	for(i=0;i<n;i++,j++){
+	for(a=0;a<10;a++){
 		printf("G");
 	}
 	return 0;
 }
 
 struct make3{
-	float r;
+	int t;
 };

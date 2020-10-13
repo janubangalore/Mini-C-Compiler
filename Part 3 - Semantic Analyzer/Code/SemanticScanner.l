@@ -7,7 +7,7 @@ exp			[Ee][+-]?{digit}+
 
 %{
 #include <stdio.h>
-int yylineno = 1, err = 0;
+int yylineno = 1, err = 0, nestingLevel = 0;
 %}
 
 %%
@@ -67,8 +67,8 @@ int yylineno = 1, err = 0;
 "break"			{  return BREAK; }
 "return"		{  return RETURN; }
 ";"			{  return(';'); }
-("{")			{  return('{'); }
-("}")			{  return('}'); }
+("{")			{  nestingLevel++;	return('{'); }
+("}")			{  nestingLevel--;	return('}'); }
 ","			{  return(','); }
 ":"			{  return(':'); }
 "="			{  return('='); }

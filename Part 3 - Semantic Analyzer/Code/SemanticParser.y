@@ -24,6 +24,7 @@ char param_list[300];
 char array_dim[100];
 extern int yylineno;
 extern int err;
+extern int nestingLevel;
 %}
 
 %%
@@ -62,7 +63,15 @@ function_definition
 	;
 
 fundamental_exp
-	: IDENTIFIER
+	: IDENTIFIER		{	if(!(strcmp($1,"printf") == 0 || strcmp($1,"printf") == 0)){
+						int flag;
+						flag = CheckIdentifierReuse($1);	
+						if(flag == 0){
+							err++;
+							yyerror("Variable has to be declared first before use");
+						}
+					}
+				}
 	| STRING_CONSTANT		{ ConstantInsert($1, "string"); }
 	| CHAR_CONSTANT     { ConstantInsert($1, "char"); }
 	| FLOAT_CONSTANT	  { ConstantInsert($1, "float"); }
@@ -214,7 +223,7 @@ init_declarator_list
 	;
 
 init_declarator
-	: declarator
+	: declarator 
 	| declarator '=' init
 	;
 
@@ -301,7 +310,7 @@ direct_abstract_declarator
 	;
 
 init
-	: assignment_expression
+	: assignment_expression		{	strcpy($$,$1);		} 
 	| '{' init_list '}'
 	| '{' init_list ',' '}'
 	;
@@ -373,6 +382,7 @@ struct Symbol
 	char tokenType[100];	//Type of identifier
 	int boundary_begin;	//Beginning of scope
 	int boundary_end;	//End of scope
+	int nesting_level;		//Degree of Nesting
 	char paramList[200];	//Parameter list
 	int attributeNo;	//Attribute number in list
 	char array_dimension[100];
@@ -432,6 +442,16 @@ void showConstantTable()
 // Function to insert value in Symbol Table
 void SymbolInsert(char* tokenName, char* tokenType)
 {
+	int itr;
+	for(itr=0;itr<s;itr++){
+		if(strcmp(SymbolTable[itr].token,tokenName) == 0){
+			if(SymbolTable[itr].boundary_end == -1 && SymbolTable[itr].nesting_level >= nestingLevel){
+				err++;
+				yyerror("Redeclaration of variable");
+				return;
+			}
+		}
+	}
 	strcpy(SymbolTable[s].token, tokenName);
 	if(tokenType[strlen(tokenType)-1]=='*'){
 		strcpy(tokenType,"pointer");
@@ -439,6 +459,7 @@ void SymbolInsert(char* tokenName, char* tokenType)
 	strcpy(SymbolTable[s].tokenType, tokenType);
 	SymbolTable[s].boundary_begin = yylineno;
 	SymbolTable[s].boundary_end = -1;
+	SymbolTable[s].nesting_level = nestingLevel;
 	SymbolTable[s].attributeNo = s+1;
 	strcpy(SymbolTable[s].paramList, "N/A");
 	strcpy(SymbolTable[s-1].array_dimension,"N/A");
@@ -452,8 +473,9 @@ void SymbolInsert(char* tokenName, char* tokenType)
 	s++;
 }
 
-//Function to to add Parameter List
-void ScopeAndParamInsert(int lineNo)
+
+//Function to add Parameter List
+int ScopeAndParamInsert(int lineNo)
 {
 
 	int itr, insert = 1;
@@ -483,13 +505,13 @@ void showSymbolTable()
 		else				strcpy(SymbolTable[s-1].tokenType,"array");
 	}
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number\tBoundary(line no)   Identifier Name\tDataType         \tArray dimension\t\tParameter List\n\n");
+	printf("Attribute Number\tBoundary(line no)  Nesting level  Identifier Name\tDataType         \tArray dimension\t\tParameter List\n\n");
 	int itr;
 	for(itr=0;itr<s;itr++){
 		if(err == 1 && SymbolTable[itr].boundary_end == -1){
 			SymbolTable[itr].boundary_end = yylineno;
 		}
-		printf("\t%-20d %-3d -  %-13d %-15s %-24s %-23s %-40s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
+		printf("\t%-20d %-3d -  %-13d %-10d  %-15s   %-24s   %-23s %-40s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].nesting_level,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
 	}
 }
 
@@ -557,6 +579,27 @@ void showStructureTable()
 	}
 }
 
+//Function to check if an identifer is in scope or not
+int CheckIdentifierReuse(char* tokenName)
+{
+
+	int itr;
+	for(itr=0;itr<st;itr++){
+		if(strcmp(StructureTable[itr].name,tokenName) == 0){
+			err++;
+			yyerror("A structure with same name is already declared");
+			return 0;
+		}
+	}	
+	for(itr=0;itr<s;itr++){
+		if(strcmp(SymbolTable[itr].token,tokenName) == 0){
+			if(SymbolTable[itr].boundary_end == -1 && SymbolTable[itr].nesting_level <= nestingLevel){
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
