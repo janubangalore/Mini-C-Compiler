@@ -376,6 +376,14 @@ jump_statement
 #include <stdio.h>
 #include <string.h>
 
+#define ANSI_COLOR_RED		"\x1b[31m"
+#define ANSI_COLOR_GREEN	"\x1b[32m"
+#define ANSI_COLOR_YELLOW	"\x1b[33m"
+#define ANSI_COLOR_BLUE		"\x1b[34m"
+#define ANSI_COLOR_MAGENTA	"\x1b[35m"
+#define ANSI_COLOR_CYAN		"\x1b[36m"
+#define ANSI_COLOR_RESET	"\x1b[0m"
+
 struct Symbol
 {
 	char token[100];	//Name of the identifier
@@ -606,9 +614,9 @@ int main(int argc, char *argv[])
 	yyin = fopen(argv[1], "r");
 	yyparse();
 	if(err==0)
-		printf("\nPARSING COMPLETE\n");
+		printf(ANSI_COLOR_GREEN "Status: PARSING COMPLETE" ANSI_COLOR_RESET "\n");
 	else
-		printf("\nPARSING FAILED\n");
+		printf(ANSI_COLOR_RED "Status: PARSING FAILED" ANSI_COLOR_RESET "\n");
 	fclose(yyin);
 
 	showSymbolTable();
@@ -620,8 +628,8 @@ extern char *yytext;
 yyerror(char *s)
 {
 	err=1;
-	printf("\nLine %d : %s\n", (yylineno), s);
-	printf("\nPARSING FAILED\n");
+	printf(ANSI_COLOR_YELLOW "\nLine %d : %s\n\n" ANSI_COLOR_RESET, (yylineno), s);
+	printf(ANSI_COLOR_RED "Status: PARSING FAILED" ANSI_COLOR_RESET "\n");
 	showSymbolTable();
 	showConstantTable();
 	showStructureTable();
