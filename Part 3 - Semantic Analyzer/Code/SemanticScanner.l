@@ -7,18 +7,18 @@ exp			[Ee][+-]?{digit}+
 
 %{
 #include <stdio.h>
-int yylineno = 1, err = 0, nestingLevel = 0;
+int lineno = 1, err = 0, nestingLevel = 0;
 %}
 
 %%
-\n  	{ yylineno++; }
+\n  	{ lineno++; }
 "/*"	{ multicomment(); }
 "//"	{ singlecomment(); }
-"#include<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}
-"#include"({space})"<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}
-"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", yylineno);  }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", yylineno);  }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", yylineno); }
+"#include<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", lineno);	}
+"#include"({space})"<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", lineno);	}
+"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", lineno);  }
+"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", lineno);  }
+"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", lineno); }
 "#"({alpha})	{	err=1;	yyerror("Invalid headerfile declaration!");	}
 
 \"[^\n]*\" 			{ yylval = yytext; return STRING_CONSTANT; }
@@ -107,7 +107,7 @@ multicomment()
 	char star = 'a', comment_end=EOF;
 	while(star!=EOF && count>0){
 		if(star == '\n'){
-			yylineno++;
+			lineno++;
 			star = input();
 		}
 		else if(star == '/'){
@@ -134,7 +134,7 @@ multicomment()
 				break;
 			}
 			else if(comment_end == '/'){
-				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", yylineno, count);
+				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", lineno, count);
 				count--;
 				if(count>0)	star = input();
 			}
@@ -158,8 +158,8 @@ singlecomment()
 	while(comment_end != EOF && comment_end != '\n'){
 		comment_end = input();
 	}
-	printf("\nLine %d : Detected single line comment\n", yylineno);
+	printf("\nLine %d : Detected single line comment\n", lineno);
 	if(comment_end == '\n'){
-		yylineno++;
+		lineno++;
 	}
 }

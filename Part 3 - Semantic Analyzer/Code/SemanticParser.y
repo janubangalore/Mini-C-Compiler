@@ -22,7 +22,7 @@ char type[100];
 char temp[100];
 char param_list[300];
 char array_dim[100];
-extern int yylineno;
+extern int lineno;
 extern int err;
 extern int nestingLevel;
 %}
@@ -58,8 +58,8 @@ struct_members
 	;
 
 function_definition		
-	: declaration_specifiers declarator compound_statement		{		ScopeAndParamInsert(yylineno);	 }
-	| declarator compound_statement		{		ScopeAndParamInsert(yylineno);	 }
+	: declaration_specifiers declarator compound_statement		{		ScopeAndParamInsert(lineno);	 }
+	| declarator compound_statement		{		ScopeAndParamInsert(lineno);	 }
 	;
 
 fundamental_exp
@@ -284,7 +284,7 @@ parameter_declaration
 	;
 
 identifier_list
-	: IDENTIFIER
+	: IDENTIFIER	{ printf("identifier_list : *%s*\n",$1);	}
 	| identifier_list ',' IDENTIFIER
 	;
 
@@ -431,7 +431,7 @@ void ConstantInsert(char* tokenName, char* datatype)
 {
 	strcpy(ConstantTable[c].token, tokenName);
 	strcpy(ConstantTable[c].dataType, datatype);
-	ConstantTable[c].lineNo = yylineno;
+	ConstantTable[c].lineNo = lineno;
 	ConstantTable[c].attributeNo = c+1;
 	c++;
 }
@@ -465,7 +465,7 @@ void SymbolInsert(char* tokenName, char* tokenType)
 		strcpy(tokenType,"pointer");
 	}
 	strcpy(SymbolTable[s].tokenType, tokenType);
-	SymbolTable[s].boundary_begin = yylineno;
+	SymbolTable[s].boundary_begin = lineno;
 	SymbolTable[s].boundary_end = -1;
 	SymbolTable[s].nesting_level = nestingLevel;
 	SymbolTable[s].attributeNo = s+1;
@@ -517,7 +517,7 @@ void showSymbolTable()
 	int itr;
 	for(itr=0;itr<s;itr++){
 		if(err == 1 && SymbolTable[itr].boundary_end == -1){
-			SymbolTable[itr].boundary_end = yylineno;
+			SymbolTable[itr].boundary_end = lineno;
 		}
 		printf("\t%-20d %-3d -  %-13d %-10d  %-15s   %-24s   %-23s %-40s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].nesting_level,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
 	}
@@ -526,7 +526,7 @@ void showSymbolTable()
 // Function to insert struct in Structure Table
 void StructureInsert(char* structName, int flag){
 	if(flag == 0){
-		StructureTable[st].boundary_end = yylineno;
+		StructureTable[st].boundary_end = lineno;
 		st++;
 		return ;
 	}
@@ -539,7 +539,7 @@ void StructureInsert(char* structName, int flag){
 		}
 	}
 	strcpy(StructureTable[st].name, structName);
-	StructureTable[st].boundary_begin = yylineno;
+	StructureTable[st].boundary_begin = lineno;
 }
 
 // Function to insert structure members in Structure Table
@@ -547,7 +547,7 @@ void StructureMemberInsert(char* name, char* type){
 	struct StructureMembers *m = malloc(sizeof(struct StructureMembers));
 	strcpy(m->MemberName, name);
 	strcpy(m->MemberType, type);
-	m->lineNo = yylineno;
+	m->lineNo = lineno;
 	m->next = NULL;
 	struct StructureMembers *ptr = StructureTable[st].stm;
 	if(ptr == NULL){
@@ -614,9 +614,9 @@ int main(int argc, char *argv[])
 	yyin = fopen(argv[1], "r");
 	yyparse();
 	if(err==0)
-		printf(ANSI_COLOR_GREEN "Status: PARSING COMPLETE" ANSI_COLOR_RESET "\n");
+		printf(ANSI_COLOR_GREEN "\nStatus: PARSING COMPLETE" ANSI_COLOR_RESET "\n");
 	else
-		printf(ANSI_COLOR_RED "Status: PARSING FAILED" ANSI_COLOR_RESET "\n");
+		printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED" ANSI_COLOR_RESET "\n");
 	fclose(yyin);
 
 	showSymbolTable();
@@ -628,8 +628,8 @@ extern char *yytext;
 yyerror(char *s)
 {
 	err=1;
-	printf(ANSI_COLOR_YELLOW "\nLine %d : %s\n\n" ANSI_COLOR_RESET, (yylineno), s);
-	printf(ANSI_COLOR_RED "Status: PARSING FAILED" ANSI_COLOR_RESET "\n");
+	printf(ANSI_COLOR_YELLOW "\nLine %d : %s\n\n" ANSI_COLOR_RESET, (lineno), s);
+	printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED" ANSI_COLOR_RESET "\n");
 	showSymbolTable();
 	showConstantTable();
 	showStructureTable();
