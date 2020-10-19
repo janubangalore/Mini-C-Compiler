@@ -11,7 +11,7 @@
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token XOR_ASSIGN OR_ASSIGN TYPE_NAME DEF
 %token CHAR CHAR_ SHORT INT INT_ LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOID
-%token IF ELSE WHILE CONTINUE BREAK RETURN FOR STRUCT
+%token IF ELSE WHILE CONTINUE BREAK RETURN FOR STRUCT SWITCH DEFAULT CASE
 %start start_state
 %nonassoc UNARY
 %glr-parser
@@ -272,6 +272,7 @@ parameter_list
 
 parameter_declaration
 	: declaration_specifiers declarator	{ 
+		UpdateSymbolTable();
 		strcat(param_list,$1);
 		strcat(param_list," ");
 		strcpy(temp,$2);
@@ -325,6 +326,7 @@ statement
 	| expression_statement
 	| selection_statement
 	| iteration_statement
+	| switch_statement
 	| jump_statement
 	;
 
@@ -363,6 +365,20 @@ iteration_statement
 	: FOR '(' expression ';' expression ';' expression ')'
 	;
 
+switch_statement
+	: SWITCH '(' expression ')' switch_body
+	;
+
+switch_body
+	: DEFAULT ':' case_body
+	| CASE expression ':' case_body
+	;
+
+case_body
+	: case_body statement
+	| statement
+	;
+
 jump_statement
 	: CONTINUE ';'
 	| BREAK ';'
@@ -390,7 +406,7 @@ struct Symbol
 	char tokenType[100];	//Type of identifier
 	int boundary_begin;	//Beginning of scope
 	int boundary_end;	//End of scope
-	int nesting_level;		//Degree of Nesting
+	int nesting_level;	//Degree of Nesting
 	char paramList[200];	//Parameter list
 	int attributeNo;	//Attribute number in list
 	char array_dimension[100];
@@ -496,6 +512,7 @@ int ScopeAndParamInsert(int lineNo)
 				insert = 0;
 				strcpy(param_list,"");
 				strcpy(SymbolTable[itr].tokenType,"function");
+				SymbolTable[itr].nesting_level++;
 			}
 			SymbolTable[itr].boundary_end = lineNo;
 		}
@@ -574,7 +591,7 @@ void StructureMemberInsert(char* name, char* type){
 void showStructureTable()
 {
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* STRUCTURE TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Structure name\t   Boundary(line no)\t  Member name\t  Member type\t\tLine number\n\n");
+	printf("Structure name\t   Boundary(line no)\t  Member name\t   Member type\t\tLine number\n\n");
 	int itr;
 	struct StructureMembers *ptr;
 	for(itr = 0; itr < st; itr++){
@@ -607,6 +624,11 @@ int CheckIdentifierReuse(char* tokenName)
 		}
 	}
 	return 0;
+}
+
+//Function to update nesting levels for variables in parameter list
+void UpdateSymbolTable(){
+	SymbolTable[s-1].nesting_level++;
 }
 
 int main(int argc, char *argv[])

@@ -66,6 +66,9 @@ int lineno = 1, err = 0, nestingLevel = 0;
 "struct"		{  return STRUCT; }
 "break"			{  return BREAK; }
 "return"		{  return RETURN; }
+"switch"		{  return SWITCH; }
+"default"		{  return DEFAULT; }
+"case"			{  return CASE; }
 ";"			{  return(';'); }
 ("{")			{  nestingLevel++;	return('{'); }
 ("}")			{  nestingLevel--;	return('}'); }
