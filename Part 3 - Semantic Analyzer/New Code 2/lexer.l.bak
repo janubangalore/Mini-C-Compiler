@@ -19,8 +19,10 @@ identifier (_|{letter})({letter}|{digit}|_){0,31}
 hex [0-9a-f]
 space [ ]
 
+ /* Exclusive states */
+%x CMNT
+
 %%
-\n                              {yylineno++;}
 "/*"	{ multicomment(); }
 "//"	{ singlecomment(); }
 "int"                             {return INT;}
@@ -47,6 +49,15 @@ space [ ]
 [+\-]?{digit}+[lLuU]?             { yylval.entry = insert(constant_table,yytext,atoi(yytext),INT); return  DEC_CONSTANT;}
 [+\-]?{digit}*\.{digit}+          { yylval.entry = insert(constant_table,yytext,atof(yytext),FLOAT); return FLOAT_CONSTANT;}
 
+"/*"                              {cmnt_strt = yylineno; BEGIN CMNT;}
+<CMNT>.|{ws}                      ;
+<CMNT>\n                          {yylineno++;}
+<CMNT>"*/"                        {BEGIN INITIAL;}
+<CMNT>"/*"                        {printf("Line %d: Nested comments are not valid!\n",yylineno);}
+<CMNT><<EOF>>                     {printf("Line %d: Unterminated comment\n", cmnt_strt); yyterminate();}
+
+"//".*                            ;
+
 \"[^\"\n]*\"                      {
                                     if(yytext[yyleng-2]=='\\') /* check if it was an escaped quote */
                                     {
@@ -62,6 +73,7 @@ space [ ]
 
 \"[^\"\n]*$                     {printf("Line %3d: Unterminated string %s\n",yylineno,yytext);}
 {digit}+({letter}|_)+	          {printf("Line %3d: Illegal identifier name %s\n",yylineno,yytext);}
+\n                              {yylineno++;}
 
 "#include<"({letter})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}
 "#include"({space})"<"({letter})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}

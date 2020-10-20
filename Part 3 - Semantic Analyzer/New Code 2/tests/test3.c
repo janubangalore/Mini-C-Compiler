@@ -1,14 +1,3 @@
-/*
-Karthik M - 15CO221
-Kaushik S Kalmady - 15CO222
-Compiler Design Project 3
-
-Test Case 3
-LHS and RHS types should match in assignment expressions
-Types need to match in arithmetic/relational and logical expressions too
-*/
-
-
 int main()
 {
     int x;

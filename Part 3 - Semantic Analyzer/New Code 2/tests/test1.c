@@ -1,15 +1,5 @@
-/*
-Karthik M - 15CO221
-Kaushik S Kalmady - 15CO222
-Compiler Design Project 3
-
-Test Case 1
-
-Redeclaration of variables
-Undeclared variables
-*/
-
-
+#include<string.h>
+#define MAX 1 
 int main()
 {
     int x;

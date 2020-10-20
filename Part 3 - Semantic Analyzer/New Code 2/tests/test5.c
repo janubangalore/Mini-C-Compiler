@@ -1,13 +1,3 @@
-/*
-Karthik M - 15CO221
-Kaushik S Kalmady - 15CO222
-Compiler Design Project 3
-
-Test Case 5
-Check function parameter number and type
-
-*/
-
 int fun(int i, char c){
     return 2;
 }

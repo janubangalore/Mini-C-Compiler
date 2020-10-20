@@ -1,13 +1,3 @@
-/*
-* Compiler Design Project 3 : Semantic Analyser
-*
-* File        : symboltable.h
-*
-* Authors     : Karthik M - 15CO22, Kaushik S Kalmady - 15CO222
-* Date        : 11-3-2018
-*/
-
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,23 +9,23 @@
 
 int table_index = 0;
 int current_scope = 0;
+extern int yylineno; 
 
-/* struct to hold each entry */
 struct entry_s
 {
 	char* lexeme;
 	double value;
 	int data_type;
-	int* parameter_list; // for functions
+	int* parameter_list; 
 	int array_dimension;
 	int is_constant;
 	int num_params;
+	int line_no;
 	struct entry_s* successor;
 };
 
 typedef struct entry_s entry_t;
 
-/* Wrapper for symbol table with pointer to symbol table of parent scope */
 struct table_s
 {
 	entry_t** symbol_table;
@@ -46,18 +36,16 @@ typedef struct table_s table_t;
 
 extern table_t symbol_table_list[NUM_TABLES];
 
-/* Create a new hash_table. */
+
 entry_t** create_table()
 {
-	entry_t** hash_table_ptr = NULL; // declare a pointer
+	entry_t** hash_table_ptr = NULL; 
 
-	/* Allocate memory for a hashtable array of size HASH_TABLE_SIZE */
 	if( ( hash_table_ptr = malloc( sizeof( entry_t* ) * HASH_TABLE_SIZE ) ) == NULL )
     	return NULL;
 
 	int i;
 
-	// Intitialise all entries as NUscopeLL
     for( i = 0; i < HASH_TABLE_SIZE; i++ )
 	{
 		hash_table_ptr[i] = NULL;
@@ -80,15 +68,12 @@ int exit_scope()
 {
 	return symbol_table_list[current_scope].parent;
 }
-/* Generate hash from a string. Then generate an index in [0, HASH_TABLE_SIZE) */
+
 uint32_t hash( char *lexeme )
 {
 	size_t i;
 	uint32_t hash;
 
-	/* Apply jenkin's hash function
-	* https://en.wikipedia.org/wiki/Jenkins_hash_function#one-at-a-time
-	*/
 	for ( hash = i = 0; i < strlen(lexeme); ++i ) {
         hash += lexeme[i];
         hash += ( hash << 10 );
@@ -98,19 +83,17 @@ uint32_t hash( char *lexeme )
 	hash ^= ( hash >> 11 );
     hash += ( hash << 15 );
 
-	return hash % HASH_TABLE_SIZE; // return an index in [0, HASH_TABLE_SIZE)
+	return hash % HASH_TABLE_SIZE; 
 }
 
-/* Create an entry for a lexeme, token pair. This will be called from the insert function */
 entry_t *create_entry( char *lexeme, int value, int data_type )
 {
 	entry_t *new_entry;
 
-	/* Allocate space for new_entry */
 	if( ( new_entry = malloc( sizeof( entry_t ) ) ) == NULL ) {
 		return NULL;
 	}
-	/* Copy lexeme to new_entry location using strdup (string-duplicate). Return NULL if it fails */
+
 	if( ( new_entry->lexeme = strdup( lexeme ) ) == NULL ) {
 		return NULL;
 	}
@@ -122,20 +105,18 @@ entry_t *create_entry( char *lexeme, int value, int data_type )
 	new_entry->is_constant = 0;
 	new_entry->num_params = 0;
 	new_entry->data_type = data_type;
+	new_entry->line_no = yylineno;
 
 	return new_entry;
 }
 
-/* Search for an entry given a lexeme. Return a pointer to the entry of the lexeme exists, else return NULL */
 entry_t* search(entry_t** hash_table_ptr, char* lexeme)
 {
 	uint32_t idx = 0;
 	entry_t* myentry;
 
-    // get the index of this lexeme as per the hash function
 	idx = hash( lexeme );
 
-	/* Traverse the linked list at this idx and see if lexeme exists */
 	myentry = hash_table_ptr[idx];
 
 	while( myentry != NULL && strcmp( lexeme, myentry->lexeme ) != 0 )
@@ -143,15 +124,14 @@ entry_t* search(entry_t** hash_table_ptr, char* lexeme)
 		myentry = myentry->successor;
 	}
 
-	if(myentry == NULL) // lexeme is not found
+	if(myentry == NULL)
 		return NULL;
 
-	else // lexeme found
+	else
 		return myentry;
 
 }
 
-// Search recursively in every parent scope for lexeme
 entry_t* search_recursive(char* lexeme)
 {
 	int idx = current_scope;
@@ -169,38 +149,38 @@ entry_t* search_recursive(char* lexeme)
 
 	return finder;
 }
-/* Insert an entry into a hash table. */
+
 entry_t* insert( entry_t** hash_table_ptr, char* lexeme, int value, int data_type)
 {
-	// Make sure you pass the current scope symbol table here
+
 	entry_t* finder = search( hash_table_ptr, lexeme );
-	if( finder != NULL) // If lexeme already exists, don't insert, return NULL
+	if( finder != NULL)
 	{
 		if(finder->is_constant)
 			return finder;
-		return NULL; //capture this is callee code and do necessary error handling
+		return NULL;
 	}
 
 	uint32_t idx;
 	entry_t* new_entry = NULL;
 	entry_t* head = NULL;
 
-	idx = hash( lexeme ); // Get the index for this lexeme based on the hash function
-	new_entry = create_entry( lexeme, value, data_type ); // Create an entry using the <lexeme, token> pair
+	idx = hash( lexeme ); 
+	new_entry = create_entry( lexeme, value, data_type ); 
 
-	if(new_entry == NULL) // In case there was some error while executing create_entry()
+	if(new_entry == NULL) 
 	{
 		printf("Insert failed. New entry could not be created.");
 		exit(1);
 	}
 
-	head = hash_table_ptr[idx]; // get the head entry at this index
+	head = hash_table_ptr[idx];
 
-	if(head == NULL) // This is the first lexeme that matches this hash index
+	if(head == NULL) 
 	{
 		hash_table_ptr[idx] = new_entry;
 	}
-	else // if not, add this entry to the head
+	else 
 	{
 		new_entry->successor = hash_table_ptr[idx];
 		hash_table_ptr[idx] = new_entry;
@@ -208,7 +188,6 @@ entry_t* insert( entry_t** hash_table_ptr, char* lexeme, int value, int data_typ
 	return hash_table_ptr[idx];
 }
 
-// This is called after a function call to check if param list match
 int check_parameter_list(entry_t* entry, int* list, int m)
 {
 	int* parameter_list = entry->parameter_list;
@@ -251,7 +230,6 @@ void print_dashes(int n)
 	printf("\n");
 }
 
-// Traverse the hash table and print all the entries
 void display_symbol_table(entry_t** hash_table_ptr)
 {
 	int i;
@@ -259,7 +237,7 @@ void display_symbol_table(entry_t** hash_table_ptr)
 
 	print_dashes(100);
 
-  printf(" %-20s %-20s %-20s %-20s %-20s\n","lexeme","data-type","array_dimension","num_params","param_list");
+  printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
 
 	print_dashes(100);
 
@@ -268,6 +246,8 @@ void display_symbol_table(entry_t** hash_table_ptr)
 		traverser = hash_table_ptr[i];
 		while( traverser != NULL)
 		{
+			printf(" %-20d", traverser->line_no);
+			
 			printf(" %-20s %-20d %-20d ", traverser->lexeme, traverser->data_type, traverser->array_dimension);
 
 			printf(" %-20d", traverser->num_params);
@@ -292,7 +272,7 @@ void display_constant_table(entry_t** hash_table_ptr)
 
 	print_dashes(25);
 
-	printf(" %-10s %-10s \n","lexeme","data-type");
+	printf(" %-10s %-10s %-10s \n","Line No","Constant","Data Type");
 
 	print_dashes(25);
 
@@ -301,7 +281,7 @@ void display_constant_table(entry_t** hash_table_ptr)
 		traverser = hash_table_ptr[i];
 		while( traverser != NULL)
 		{
-			printf(" %-10s %-10d \n", traverser->lexeme, traverser->data_type);
+			printf(" %-10d %-10s %-10d \n", traverser->line_no, traverser->lexeme, traverser->data_type);
 			traverser = traverser->successor;
 		}
 	}
