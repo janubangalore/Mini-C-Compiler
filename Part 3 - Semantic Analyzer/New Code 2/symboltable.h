@@ -234,18 +234,14 @@ void display_symbol_table()
 {
 
 	int scope,i;
-	for(scope=0; scope<=table_index; scope++)
-	{
+	for(scope=0; scope<=table_index; scope++){
 		entry_t** hash_table_ptr = symbol_table_list[scope].symbol_table;
 
-		entry_t* traverser;
-
-	int i;
 	entry_t* traverser;
 
 	print_dashes(130);
 
-  printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
+  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
 
 
 		print_dashes(130);
