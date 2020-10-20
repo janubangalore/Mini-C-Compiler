@@ -21,11 +21,11 @@ function run() {
 			echo -ne "="
 		done
 		printf "\n"
-		local filename="tests/test"$start".c"
+		local filename="Testcases/test"$start".c"
 		./a $filename
 		((start++))
 	done
 }
 
-number_of_files=`ls -l ./tests/ | egrep -c '^-'`
+number_of_files=`ls -l ./Testcases/ | egrep -c '^-'`
 run $number_of_files

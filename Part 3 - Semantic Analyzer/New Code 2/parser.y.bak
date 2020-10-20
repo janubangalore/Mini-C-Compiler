@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
 	display_symbol_table();
 
 	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* CONSTANT TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	display_constant_table(constant_table);
+	display_constant_table();
 
 
 	fclose(yyin);

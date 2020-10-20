@@ -230,43 +230,49 @@ void print_dashes(int n)
 	printf("\n");
 }
 
-void display_symbol_table(entry_t** hash_table_ptr)
+void display_symbol_table()
 {
-	int i;
-	entry_t* traverser;
-
-	print_dashes(100);
-
-  printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
-
-	print_dashes(100);
-
-	for( i=0; i < HASH_TABLE_SIZE; i++)
+	int scope,i;
+	for(scope=0; scope<=table_index; scope++)
 	{
-		traverser = hash_table_ptr[i];
-		while( traverser != NULL)
+		entry_t** hash_table_ptr = symbol_table_list[scope].symbol_table;
+
+		entry_t* traverser;
+
+		print_dashes(130);
+
+	  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Scope level","Array Dimension","Num of params","Param List");
+
+		print_dashes(130);
+
+		for(i=0; i < HASH_TABLE_SIZE; i++)
 		{
-			printf(" %-20d", traverser->line_no);
-			
-			printf(" %-20s %-20d %-20d ", traverser->lexeme, traverser->data_type, traverser->array_dimension);
+			traverser = hash_table_ptr[i];
+			while( traverser != NULL)
+			{
+				printf(" %-20d", traverser->line_no);
+				
+				printf(" %-20s %-20d %-20d %-20d", traverser->lexeme, traverser->data_type, scope, traverser->array_dimension);
 
-			printf(" %-20d", traverser->num_params);
+				printf(" %-20d", traverser->num_params);
 
-			int j;
-			for(j=0; j < traverser->num_params; j++)
-			printf(" %d",traverser->parameter_list[j]);
-			printf("\n");
+				int j;
+				for(j=0; j < traverser->num_params; j++)
+				printf(" %d",traverser->parameter_list[j]);
+				printf("\n");
 
-			traverser = traverser->successor;
+				traverser = traverser->successor;
+			}
 		}
-	}
 
-	print_dashes(100);
+		print_dashes(130);
+	}
 
 }
 
 void display_constant_table(entry_t** hash_table_ptr)
 {
+
 	int i;
 	entry_t* traverser;
 
@@ -287,15 +293,4 @@ void display_constant_table(entry_t** hash_table_ptr)
 	}
 
 	print_dashes(25);
-}
-
-void display_all()
-{
-		int i;
-		for(i=0; i<=table_index; i++)
-		{
-			printf("Scope: %d\n",i);
-			display_symbol_table(symbol_table_list[i].symbol_table);
-			printf("\n\n");
-		}
 }
