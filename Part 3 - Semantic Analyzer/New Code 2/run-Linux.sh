@@ -4,7 +4,7 @@ YELLOW='\033[1;33m'
 NOCOLOR='\033[0m'
 
 function run() {
-	flex lexer.l && yacc -d parser.y && gcc y.tab.c -w
+	flex lexer.l && yacc -dy parser.y && gcc y.tab.c -w
 	local total_testcases="$1"
 	echo "Running: $total_testcases"
 	local start=1
