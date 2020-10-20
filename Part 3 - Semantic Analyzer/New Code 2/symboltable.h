@@ -235,11 +235,11 @@ void display_symbol_table(entry_t** hash_table_ptr)
 	int i;
 	entry_t* traverser;
 
-	print_dashes(100);
+	print_dashes(150);
 
   printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
 
-	print_dashes(100);
+	print_dashes(150);
 
 	for( i=0; i < HASH_TABLE_SIZE; i++)
 	{
@@ -261,7 +261,7 @@ void display_symbol_table(entry_t** hash_table_ptr)
 		}
 	}
 
-	print_dashes(100);
+	print_dashes(150);
 
 }
 
@@ -270,11 +270,11 @@ void display_constant_table(entry_t** hash_table_ptr)
 	int i;
 	entry_t* traverser;
 
-	print_dashes(25);
+	print_dashes(35);
 
 	printf(" %-10s %-10s %-10s \n","Line No","Constant","Data Type");
 
-	print_dashes(25);
+	print_dashes(35);
 
 	for( i=0; i < HASH_TABLE_SIZE; i++)
 	{
@@ -286,7 +286,7 @@ void display_constant_table(entry_t** hash_table_ptr)
 		}
 	}
 
-	print_dashes(25);
+	print_dashes(35);
 }
 
 void display_all()
