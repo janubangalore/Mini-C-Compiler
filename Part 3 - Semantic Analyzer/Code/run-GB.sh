@@ -4,7 +4,7 @@ YELLOW='\033[1;33m'
 NOCOLOR='\033[0m'
 
 function run() {
-	flex lexer.l && yacc -dy parser.y && gcc y.tab.c -w
+	flex SemanticScanner.l && yacc -dy SemanticParser.y && gcc y.tab.c -w
 	local total_testcases="$1"
 	echo "Running: $total_testcases"
 	local start=1
@@ -21,11 +21,11 @@ function run() {
 			echo -ne "="
 		done
 		printf "\n"
-		local filename="Testcases/test"$start".c"
+		local filename="../Testcases/test"$start".c"
 		./a $filename
 		((start++))
 	done
 }
 
-number_of_files=`ls -l ./Testcases/ | egrep -c '^-'`
+number_of_files=`ls -l ../Testcases/ | egrep -c '^-'`
 run $number_of_files

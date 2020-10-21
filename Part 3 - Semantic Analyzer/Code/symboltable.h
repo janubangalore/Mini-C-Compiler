@@ -226,29 +226,39 @@ void print_dashes(int n)
 
 	int i;
 	for(i=0; i< n; i++)
-	printf("=");
+	printf("-");                         
 	printf("\n");
+}
+
+
+char *display_datatype(int data_type){
+	switch(data_type){
+		case 277 : return "short";
+		case 278 : return "int";
+		case 279 : return "long";
+		case 280 : return "long long";
+		case 284 : return "void";
+		case 285 : return "char";
+		case 286 : return "float";
+		case 287 : return "double";
+	}
+	return "Unknown";
 }
 
 void display_symbol_table()
 {
 
 	int scope,i;
+	print_dashes(140);
+	
+	printf(" %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name","Data Type","Scope Level","Array Dimension","Num of params","Param List");  
+	
+	print_dashes(140);
+
 	for(scope=0; scope<=table_index; scope++){
 		entry_t** hash_table_ptr = symbol_table_list[scope].symbol_table;
 
 	entry_t* traverser;
-
-	print_dashes(130);
-
-  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
-
-
-		print_dashes(130);
-
-	  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Scope level","Array Dimension","Num of params","Param List");
-
-		print_dashes(130);
 
 		for(i=0; i < HASH_TABLE_SIZE; i++)
 		{
@@ -257,21 +267,29 @@ void display_symbol_table()
 			{
 				printf(" %-20d", traverser->line_no);
 				
-				printf(" %-20s %-20d %-20d %-20d", traverser->lexeme, traverser->data_type, scope, traverser->array_dimension);
+				printf(" %-20s %-20s %-20d", traverser->lexeme, display_datatype(traverser->data_type), scope);
+				if(traverser->array_dimension==-1)
+				printf(" %-20s","N/A");
+				else
+				printf(" %-20d",traverser->array_dimension);
 
 				printf(" %-20d", traverser->num_params);
-
-				int j;
-				for(j=0; j < traverser->num_params; j++)
-				printf(" %d",traverser->parameter_list[j]);
-				printf("\n");
-
+				if(traverser->num_params == 0){
+					printf("      - \n");
+				}
+				else{
+					int j;
+					for(j=0; j < traverser->num_params; j++)
+					printf(" %d",traverser->parameter_list[j]);
+					printf("\n");
+				}
 				traverser = traverser->successor;
 			}
 		}
 
-		print_dashes(130);
 	}
+		print_dashes(140);
+
 
 }
 
@@ -281,21 +299,21 @@ void display_constant_table(entry_t** hash_table_ptr)
 	int i;
 	entry_t* traverser;
 
-	print_dashes(35);
+	print_dashes(55);
 
-	printf(" %-10s %-10s %-10s \n","Line No","Constant","Data Type");
+	printf(" %-20s %-20s %-20s \n","Line No","Constant","Data Type");
 
-	print_dashes(35);
+	print_dashes(55);
 
 	for( i=0; i < HASH_TABLE_SIZE; i++)
 	{
 		traverser = hash_table_ptr[i];
 		while( traverser != NULL)
 		{
-			printf(" %-10d %-10s %-10d \n", traverser->line_no, traverser->lexeme, traverser->data_type);
+			printf(" %-20d %-20s %-20s \n", traverser->line_no, traverser->lexeme, display_datatype(traverser->data_type));
 			traverser = traverser->successor;
 		}
 	}
 
-	print_dashes(35);
+	print_dashes(55);
 }
