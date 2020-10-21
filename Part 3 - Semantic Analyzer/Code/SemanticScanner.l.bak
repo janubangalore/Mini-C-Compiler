@@ -5,7 +5,7 @@
 #include <limits.h>
 
 #include "y.tab.h"
-table_entry** constant_table;
+entry_t** constant_table;
 
 int yylineno =1;
 

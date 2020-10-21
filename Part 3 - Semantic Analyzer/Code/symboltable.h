@@ -5,15 +5,15 @@
 #include <string.h>
 
 #define HASH_TABLE_SIZE 100
-#define NUM_TABLES 10
+#define MAX_SCOPE 8
 
 int table_index = 0;
 int current_scope = 0;
 extern int yylineno; 
 
-struct entry_s
+struct table_skeleton
 {
-	char* lexeme;
+	char* token;
 	double value;
 	int data_type;
 	int* parameter_list; 
@@ -21,43 +21,38 @@ struct entry_s
 	int is_constant;
 	int num_params;
 	int line_no;
-	struct entry_s* successor;
+	struct table_skeleton* next;
 };
 
-typedef struct entry_s entry_t;
+typedef struct table_skeleton table_entry;
 
 struct table_s
 {
-	entry_t** symbol_table;
+	table_entry** symbol_table;
 	int parent;
 };
 
 typedef struct table_s table_t;
 
-extern table_t symbol_table_list[NUM_TABLES];
+extern table_t symbol_table_list[MAX_SCOPE];
 
-
-entry_t** create_table()
+table_entry** create_table()
 {
-	entry_t** hash_table_ptr = NULL; 
+	table_entry** hash_table_ptr = NULL; 
 
-	if( ( hash_table_ptr = malloc( sizeof( entry_t* ) * HASH_TABLE_SIZE ) ) == NULL )
+	if((hash_table_ptr = malloc(sizeof(table_entry*)*HASH_TABLE_SIZE)) == NULL)
     	return NULL;
 
 	int i;
-
-    for( i = 0; i < HASH_TABLE_SIZE; i++ )
-	{
-		hash_table_ptr[i] = NULL;
-	}
-
+    for(i = 0; i < HASH_TABLE_SIZE; i++){
+    	hash_table_ptr[i] = NULL;
+    }
 	return hash_table_ptr;
 }
 
 int create_new_scope()
 {
 	table_index++;
-
 	symbol_table_list[table_index].symbol_table = create_table();
 	symbol_table_list[table_index].parent = current_scope;
 
@@ -69,91 +64,76 @@ int exit_scope()
 	return symbol_table_list[current_scope].parent;
 }
 
-uint32_t hash( char *lexeme )
-{
-	size_t i;
+uint32_t hash(char *token){
+	size_t i = 0;
 	uint32_t hash;
-
-	for ( hash = i = 0; i < strlen(lexeme); ++i ) {
-        hash += lexeme[i];
-        hash += ( hash << 10 );
-        hash ^= ( hash >> 6 );
+	for (hash = 0; i < strlen(token); ++i){
+        hash += token[i];
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
     }
-	hash += ( hash << 3 );
-	hash ^= ( hash >> 11 );
-    hash += ( hash << 15 );
-
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+    hash += (hash << 15);
 	return hash % HASH_TABLE_SIZE; 
 }
 
-entry_t *create_entry( char *lexeme, int value, int data_type )
-{
-	entry_t *new_entry;
-
-	if( ( new_entry = malloc( sizeof( entry_t ) ) ) == NULL ) {
+table_entry *create_entry( char *token, int value, int data_type){
+	table_entry *new_entry;
+	if((new_entry = malloc( sizeof( table_entry ) ) ) == NULL ) {
 		return NULL;
 	}
-
-	if( ( new_entry->lexeme = strdup( lexeme ) ) == NULL ) {
+	if((new_entry->token = strdup(token)) == NULL){
 		return NULL;
 	}
 
 	new_entry->value = value;
-	new_entry->successor = NULL;
+	new_entry->next = NULL;
 	new_entry->parameter_list = NULL;
 	new_entry->array_dimension = -1;
 	new_entry->is_constant = 0;
 	new_entry->num_params = 0;
 	new_entry->data_type = data_type;
 	new_entry->line_no = yylineno;
-
 	return new_entry;
 }
 
-entry_t* search(entry_t** hash_table_ptr, char* lexeme)
+table_entry* search(table_entry** hash_table_ptr, char* token)
 {
 	uint32_t idx = 0;
-	entry_t* myentry;
+	table_entry* myentry;
 
-	idx = hash( lexeme );
+	idx = hash(token);
 
 	myentry = hash_table_ptr[idx];
 
-	while( myentry != NULL && strcmp( lexeme, myentry->lexeme ) != 0 )
-	{
-		myentry = myentry->successor;
-	}
+	while( myentry != NULL && strcmp( token, myentry->token) != 0)
+		myentry = myentry->next;
 
-	if(myentry == NULL)
-		return NULL;
-
-	else
-		return myentry;
+	return myentry;
 
 }
 
-entry_t* search_recursive(char* lexeme)
+table_entry* rec_search(char* token)
 {
 	int idx = current_scope;
-	entry_t* finder = NULL;
+	table_entry* finder = NULL;
 
 	while(idx != -1)
 	{
-		finder = search(symbol_table_list[idx].symbol_table, lexeme);
-
+		finder = search(symbol_table_list[idx].symbol_table, token);
 		if(finder != NULL)
 			return finder;
 
 		idx = symbol_table_list[idx].parent;
 	}
-
 	return finder;
 }
 
-entry_t* insert( entry_t** hash_table_ptr, char* lexeme, int value, int data_type)
+table_entry* insert( table_entry** hash_table_ptr, char* token, int value, int data_type)
 {
 
-	entry_t* finder = search( hash_table_ptr, lexeme );
+	table_entry* finder = search( hash_table_ptr, token );
 	if( finder != NULL)
 	{
 		if(finder->is_constant)
@@ -162,11 +142,11 @@ entry_t* insert( entry_t** hash_table_ptr, char* lexeme, int value, int data_typ
 	}
 
 	uint32_t idx;
-	entry_t* new_entry = NULL;
-	entry_t* head = NULL;
+	table_entry* new_entry = NULL;
+	table_entry* head = NULL;
 
-	idx = hash( lexeme ); 
-	new_entry = create_entry( lexeme, value, data_type ); 
+	idx = hash( token ); 
+	new_entry = create_entry( token, value, data_type ); 
 
 	if(new_entry == NULL) 
 	{
@@ -182,13 +162,13 @@ entry_t* insert( entry_t** hash_table_ptr, char* lexeme, int value, int data_typ
 	}
 	else 
 	{
-		new_entry->successor = hash_table_ptr[idx];
+		new_entry->next = hash_table_ptr[idx];
 		hash_table_ptr[idx] = new_entry;
 	}
 	return hash_table_ptr[idx];
 }
 
-int check_parameter_list(entry_t* entry, int* list, int m)
+int check_parameter_list(table_entry* entry, int* list, int m)
 {
 	int* parameter_list = entry->parameter_list;
 
@@ -207,7 +187,7 @@ int check_parameter_list(entry_t* entry, int* list, int m)
 	return 1;
 }
 
-void fill_parameter_list(entry_t* entry, int* list, int n)
+void fill_parameter_list(table_entry* entry, int* list, int n)
 {
 	entry->parameter_list = (int *)malloc(n*sizeof(int));
 
@@ -225,8 +205,8 @@ void print_dashes(int n)
   printf("\n");
 
 	int i;
-	for(i=0; i< n; i++)
-	printf("-");                         
+	for(i=0; i<n; i++)
+		printf("-");                         
 	printf("\n");
 }
 
@@ -249,71 +229,65 @@ void display_symbol_table()
 {
 
 	int scope,i;
-	print_dashes(140);
-	
+	print_dashes(140);	
 	printf(" %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name","Data Type","Scope Level","Array Dimension","Num of params","Param List");  
-	
 	print_dashes(140);
 
 	for(scope=0; scope<=table_index; scope++){
-		entry_t** hash_table_ptr = symbol_table_list[scope].symbol_table;
+		table_entry** hash_table_ptr = symbol_table_list[scope].symbol_table;
 
-	entry_t* traverser;
+	table_entry* node;
 
 		for(i=0; i < HASH_TABLE_SIZE; i++)
 		{
-			traverser = hash_table_ptr[i];
-			while( traverser != NULL)
+			node = hash_table_ptr[i];
+			while( node != NULL)
 			{
-				printf(" %-20d", traverser->line_no);
+				printf(" %-20d", node->line_no);
 				
-				printf(" %-20s %-20s %-20d", traverser->lexeme, display_datatype(traverser->data_type), scope);
-				if(traverser->array_dimension==-1)
+				printf(" %-20s %-20s %-20d", node->token, display_datatype(node->data_type), scope);
+				if(node->array_dimension==-1)
 				printf(" %-20s","N/A");
 				else
-				printf(" %-20d",traverser->array_dimension);
+				printf(" %-20d",node->array_dimension);
 
-				printf(" %-20d", traverser->num_params);
-				if(traverser->num_params == 0){
+				printf(" %-20d", node->num_params);
+				if(node->num_params == 0){
 					printf("      - \n");
 				}
 				else{
 					int j;
-					for(j=0; j < traverser->num_params; j++)
-					printf(" %d",traverser->parameter_list[j]);
+					for(j=0; j < node->num_params; j++)
+					printf(" %s",display_datatype(node->parameter_list[j]));
 					printf("\n");
 				}
-				traverser = traverser->successor;
+				node = node->next;
 			}
 		}
 
 	}
-		print_dashes(140);
+	print_dashes(140);
 
 
 }
 
-void display_constant_table(entry_t** hash_table_ptr)
+void display_constant_table(table_entry** hash_table_ptr)
 {
 
 	int i;
-	entry_t* traverser;
-
+	table_entry* node;
 	print_dashes(55);
-
 	printf(" %-20s %-20s %-20s \n","Line No","Constant","Data Type");
-
 	print_dashes(55);
 
 	for( i=0; i < HASH_TABLE_SIZE; i++)
 	{
-		traverser = hash_table_ptr[i];
-		while( traverser != NULL)
+		node = hash_table_ptr[i];
+		while( node != NULL)
 		{
-			printf(" %-20d %-20s %-20s \n", traverser->line_no, traverser->lexeme, display_datatype(traverser->data_type));
-			traverser = traverser->successor;
+			printf(" %-20d %-20s %-20s \n", node->line_no, node->token, display_datatype(node->data_type));
+			node = node->next;
 		}
 	}
-
 	print_dashes(55);
 }

@@ -62,17 +62,18 @@ void type_check(int,int,int);
 
 %%
 
+ /* Program is made up of multiple builder blocks. */
 starter: starter builder
-	| builder
-	;
+			 | builder;
 
+ /* Each builder block is either a function or a declaration */
 builder: function
-	| declaration
-	;
+			 | declaration
+			 ;
 
-
+ /* This is how a function looks like */
 function: type
-	  identifier 											{
+					identifier 											{
 																						func_type = cur_dtype;
 																						is_declaration = 0;
 																						current_scope = create_new_scope();
