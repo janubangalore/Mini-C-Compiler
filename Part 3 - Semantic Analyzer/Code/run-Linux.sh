@@ -4,7 +4,7 @@ YELLOW='\033[1;33m'
 NOCOLOR='\033[0m'
 
 function run() {
-	flex SemanticScanner.l && yacc -dy SemanticParser.y && gcc y.tab.c -w
+	lex SemanticScanner.l && yacc -dy SemanticParser.y && gcc y.tab.c -ll -ly -w
 	local total_testcases="$1"
 	echo "Running: $total_testcases"
 	local start=1
