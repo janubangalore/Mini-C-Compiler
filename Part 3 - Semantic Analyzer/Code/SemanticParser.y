@@ -72,147 +72,114 @@ builder: function
 
 
 function: type
-	  identifier 											{
-																						func_type = cur_dtype;
-																						is_declaration = 0;
-																						current_scope = create_new_scope();
-																					}
+	  identifier 		{	func_type = cur_dtype;		is_declaration = 0;	current_scope = create_new_scope();	}
+	'(' argument_list ')' 	{	is_declaration = 0;	fill_parameter_list($2,param_list,p_idx);	p_idx = 0;	is_func = 1;	p=1;	}
+	compound_stmt		{	is_func = 0;	}
+        ;
 
-					'(' argument_list ')' 					{
-																						is_declaration = 0;
-																						fill_parameter_list($2,param_list,p_idx);
-																						p_idx = 0;
-																						is_func = 1;
-																						p=1;
-																					}
-
-					compound_stmt										{
-																						is_func = 0;
-																					}
-          ;
- /* Now we will define a grammar for how types can be specified */
-
-type : data_type pointer
-     {is_declaration = 1; }
-     | data_type
-     {is_declaration = 1; }
-		 ;
+type : data_type pointer     {is_declaration = 1; }
+     | data_type     {is_declaration = 1; }
+     ;
 
 pointer: '*' pointer
-    	 | '*'
+       | '*'
        ;
 
 data_type : sign_specifier type_specifier
-    			| type_specifier
-    			;
+	  | type_specifier
+    	  ;
 
 sign_specifier : SIGNED
-    					 | UNSIGNED
-    			 		 ;
+    	  | UNSIGNED
+    	  ;
 
 type_specifier :INT                    {cur_dtype = INT;}
-    |SHORT INT                         {cur_dtype = SHORT;}
-    |SHORT                             {cur_dtype = SHORT;}
-    |LONG                              {cur_dtype = LONG;}
-    |LONG INT		               {cur_dtype = LONG;}
-    |LONG_LONG                         {cur_dtype = LONG_LONG;}
-    |LONG_LONG INT                     {cur_dtype = LONG_LONG;}
-    |CHAR 				{cur_dtype = CHAR;}
-    |FLOAT 				{cur_dtype = FLOAT;}
-    |DOUBLE 				{cur_dtype = DOUBLE;}
-    |VOID				{cur_dtype = VOID;}
-    ;
+		|SHORT INT             {cur_dtype = SHORT;}
+		|SHORT                 {cur_dtype = SHORT;}
+		|LONG                  {cur_dtype = LONG;}
+		|LONG INT	       {cur_dtype = LONG;}
+		|LONG_LONG             {cur_dtype = LONG_LONG;}
+		|LONG_LONG INT         {cur_dtype = LONG_LONG;}
+		|CHAR 			{cur_dtype = CHAR;}
+		|FLOAT 			{cur_dtype = FLOAT;}
+		|DOUBLE 		{cur_dtype = DOUBLE;}
+		|VOID			{cur_dtype = VOID;}
+		;
 
- /* grammar rules for argument list */
- /* argument list can be empty */
 argument_list : arguments
-    					|
-    					;
- /* arguments are comma separated TYPE ID pairs */
-arguments : arguments ',' arg
-    			| arg
-    			;
+    	      |
+    	      ;
 
- /* Each arg is a TYPE ID pair */
-arg : type identifier									{param_list[p_idx++] = $2->data_type;}
+arguments : arguments ',' arg
+    	  | arg
+    	  ;
+
+
+arg : type identifier			{	param_list[p_idx++] = $2->data_type;	}
     ;
 
- /* Generic statement. Can be compound or a single statement */
 stmt:compound_stmt
     |single_stmt
     ;
 
- /* The function body is covered in braces and has multiple statements. */
 compound_stmt :
-							'{' 							{
-																		if(!p)current_scope = create_new_scope();
-																		else p = 0;
-																}
-
-							statements
-
-							'}' 						{current_scope = exit_scope();}
+		'{' 			{	if(!p)current_scope = create_new_scope();	else p = 0;	}
+		statements
+		'}' 			{	current_scope = exit_scope();	}
     ;
 
 statements:statements stmt
     |
     ;
 
- /* Grammar for what constitutes every individual statement */
 single_stmt :if_block
     |for_block
     |while_block
     |declaration
     |function_call ';'
-		|RETURN ';'								  {
-																	if(is_func)
-																	{
-																		if(func_type != VOID)
-																			yyerror("return type (VOID) does not match function type");
-																	}
-																  else yyerror("return statement not inside function definition");
-																}
+    |RETURN ';'				{	if(is_func){
+							if(func_type != VOID)
+								yyerror("Return type (VOID) does not match function type");
+						}
+						else yyerror("Return statement not inside function definition");
+					}
 
-		|CONTINUE ';'							 {if(!is_loop) {yyerror("Illegal use of continue");}}
-		|BREAK ';'                 {if(!is_loop) {yyerror("Illegal use of break");}}
-
-		|RETURN sub_expr ';'			 {
-																	if(is_func)
-																	{
-																		if(func_type != $2)
-																			yyerror("return type does not match function type");
-																	}
-																	else yyerror("return statement not in function definition");
-															 }
-    ;
+	|CONTINUE ';'							 {if(!is_loop) {yyerror("Illegal use of continue");}}
+	|BREAK ';'                 {if(!is_loop) {yyerror("Illegal use of break");}}
+	|RETURN sub_expr ';'			 {	if(is_func){
+								if(func_type != $2)
+									yyerror("Return type does not match function type");
+							}
+							else yyerror("return statement not in function definition");
+						 }
+	;
 
 for_block:FOR '(' expression_stmt  expression_stmt ')' {is_loop = 1;} stmt {is_loop = 0;}
-    		 |FOR '(' expression_stmt expression_stmt expression ')' {is_loop = 1;} stmt {is_loop = 0;}
-    		 ;
+    	|FOR '(' expression_stmt expression_stmt expression ')' {is_loop = 1;} stmt {is_loop = 0;}
+    	;
 
-if_block:IF '(' expression ')' stmt 								%prec LOWER_THAN_ELSE
-				|IF '(' expression ')' stmt ELSE stmt
-    ;
+if_block: IF '(' expression ')' stmt 				%prec LOWER_THAN_ELSE
+	| IF '(' expression ')' stmt ELSE stmt
+	; 
 
 while_block: WHILE '(' expression	')' {is_loop = 1;} stmt {is_loop = 0;}
 		;
 
 declaration: type  declaration_list ';'
-           {is_declaration = 0; }
-					 | declaration_list ';'
-					 | unary_expr ';'
+		   {is_declaration = 0; }
+	| declaration_list ';'
+	| unary_expr ';'
 
 
 declaration_list: declaration_list ',' sub_decl
-								|sub_decl
-								;
+		|sub_decl
+		;
 
 sub_decl: assignment_expr
     		|identifier
     		|array_access
 				;
 
-/* This is because we can have empty expession statements inside for loops */
 expression_stmt: expression ';'
     					 | ';'
     			 		 ;
@@ -222,25 +189,25 @@ expression: expression ',' sub_expr
 					;
 
 sub_expr:
-    sub_expr '>' sub_expr															  {type_check(2,$1,$3); $$ = $1;}
-    |sub_expr '<' sub_expr															{type_check(2,$1,$3); $$ = $1;}
-    |sub_expr EQ sub_expr																{type_check(2,$1,$3); $$ = $1;}
-    |sub_expr NOT_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
-    |sub_expr LS_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
-    |sub_expr GR_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
-		|sub_expr LOGICAL_AND sub_expr											{type_check(2,$1,$3); $$ = $1;}
-		|sub_expr LOGICAL_OR sub_expr												{type_check(2,$1,$3); $$ = $1;}
-		|'!' sub_expr																				{$$ = $2;}
-		|arithmetic_expr																		{$$ = $1;}
-    |assignment_expr																		{$$ = $1;}
-		|unary_expr																					{$$ = $1;}
+    sub_expr '>' sub_expr				{	type_check(2,$1,$3);	$$ = $1;	}
+    |sub_expr '<' sub_expr				{	type_check(2,$1,$3);	$$ = $1;	}
+    |sub_expr EQ sub_expr				{	type_check(2,$1,$3);	$$ = $1;	}
+    |sub_expr NOT_EQ sub_expr				{	type_check($1,$3,2);	$$ = $1;	}
+    |sub_expr LS_EQ sub_expr				{	type_check($1,$3,2);	$$ = $1;	}
+    |sub_expr GR_EQ sub_expr				{	type_check($1,$3,2);	$$ = $1;	}
+    |sub_expr LOGICAL_AND sub_expr			{	type_check(2,$1,$3);	$$ = $1;	}
+    |sub_expr LOGICAL_OR sub_expr			{	type_check(2,$1,$3);	$$ = $1;	}
+    |'!' sub_expr					{	$$ = $2; }
+    |arithmetic_expr					{	$$ = $1; }
+    |assignment_expr					{	$$ = $1; }
+    |unary_expr						{	$$ = $1; }
     ;
 
 
 assignment_expr :
-		lhs assign_op  arithmetic_expr												{type_check(1,$1,$3); $$ = $3; rhs=0;}
-    |lhs assign_op  array_access													{type_check(1,$1,$3); $$ = $3;rhs=0;}
-    |lhs assign_op  function_call												{type_check(1,$1,$3); $$ = $3;rhs=0;}
+    lhs assign_op  arithmetic_expr			{	type_check(1,$1,$3);	$$ = $3;	rhs=0; }
+    |lhs assign_op  array_access			{	type_check(1,$1,$3);	$$ = $3;	rhs=0; }
+    |lhs assign_op  function_call			{type_check(1,$1,$3); $$ = $3;rhs=0;}
 	|lhs assign_op  unary_expr                                                  {type_check($1,$3,1); $$ = $3;rhs=0;}
 		|unary_expr assign_op  unary_expr										{type_check(1,$1,$3); $$ = $3;rhs=0;}
     ;
@@ -345,12 +312,12 @@ function_call: identifier '(' parameter_list ')'				{
 
 parameter_list:
               parameter_list ','  parameter
-              |parameter
+	      |parameter
               ;
 
-parameter: sub_expr																			{param_list[p_idx++] = $1;}
-				 | STRING																				{param_list[p_idx++] = STRING;}
-				 ;
+parameter: sub_expr		{	param_list[p_idx++] = $1;	}
+	| STRING		{	param_list[p_idx++] = STRING;	}
+	;
 %%
 
 #define ANSI_COLOR_RED		"\x1b[31m"
