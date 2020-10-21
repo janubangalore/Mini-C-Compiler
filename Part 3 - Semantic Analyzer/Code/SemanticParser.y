@@ -302,7 +302,7 @@ function_call: identifier '(' parameter_list ')'	{
 							$$ = $1->data_type;
 							check_parameter_list($1,param_list,p_idx);
 							p_idx = 0;
-							}
+							
 																												}
              ;
 
