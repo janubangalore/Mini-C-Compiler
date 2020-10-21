@@ -1,659 +1,434 @@
-%nonassoc NO_ELSE
-%nonassoc ELSE
-%left '<' '>' '=' GE_OP LE_OP EQ_OP NE_OP 
-%left  '+'  '-'
-%left  '*'  '/' '%'
-%left  '|'
-%left  '&'
-%token IDENTIFIER STRING_CONSTANT CHAR_CONSTANT INT_CONSTANT FLOAT_CONSTANT SIZEOF
-%token INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
-%token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
-%token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-%token XOR_ASSIGN OR_ASSIGN TYPE_NAME DEF
-%token CHAR CHAR_ SHORT INT INT_ LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOID
-%token IF ELSE WHILE CONTINUE BREAK RETURN FOR STRUCT SWITCH DEFAULT CASE
-%start start_state
-%nonassoc UNARY
-%glr-parser
-
 %{
-#include<string.h>
-char type[100];
-char temp[100];
-char param_list[300];
-char array_dim[100];
-extern int lineno;
-extern int err;
-extern int nestingLevel;
+	#include <stdlib.h>
+	#include <stdio.h>
+	int yyerror(char *msg);
+
+	#include "symboltable.h"
+	#include "lex.yy.c"
+
+	#define SYMBOL_TABLE symbol_table_list[current_scope].symbol_table
+
+  extern entry_t** constant_table;
+
+	int current_dtype;
+
+	table_t symbol_table_list[NUM_TABLES];
+
+	int is_declaration = 0;
+	int is_loop = 0;
+	int is_func = 0;
+	int func_type;
+	extern int yylinno;
+	int param_list[10];
+	int p_idx = 0;
+	int p=0;
+	int rhs = 0;
+
+	void type_check(int,int,int);
 %}
 
+%union
+{
+	int data_type;
+	entry_t* entry;
+}
+
+%token <entry> IDENTIFIER
+
+ /* Constants */
+%token <entry> DEC_CONSTANT HEX_CONSTANT CHAR_CONSTANT FLOAT_CONSTANT
+%token STRING
+
+ /* Logical and Relational operators */
+%token LOGICAL_AND LOGICAL_OR LS_EQ GR_EQ EQ NOT_EQ
+
+ /* Short hand assignment operators */
+%token MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN
+%token INCREMENT DECREMENT
+
+ /* Data types */
+%token SHORT INT LONG LONG_LONG SIGNED UNSIGNED CONST VOID CHAR FLOAT DOUBLE
+
+ /* Keywords */
+%token IF FOR WHILE CONTINUE BREAK RETURN
+
+%type <entry> identifier
+%type <entry> constant
+%type <entry> array_index
+
+%type <data_type> sub_expr
+%type <data_type> unary_expr
+%type <data_type> arithmetic_expr
+%type <data_type> assignment_expr
+%type <data_type> function_call
+%type <data_type> array_access
+%type <data_type> lhs
+
+%left ','
+%right '='
+%left LOGICAL_OR
+%left LOGICAL_AND
+%left EQ NOT_EQ
+%left '<' '>' LS_EQ GR_EQ
+%left '+' '-'
+%left '*' '/' '%'
+%right '!'
+
+
+%nonassoc UMINUS
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
+
+
 %%
 
-start_state
-	: global_declaration
-	| start_state global_declaration
-	;
+ /* Program is made up of multiple builder blocks. */
+starter: starter builder
+			 | builder;
 
-global_declaration
-	: function_definition
-	| struct_definition
-	| declaration
-	;
+ /* Each builder block is either a function or a declaration */
+builder: function
+			 | declaration
+			 ;
 
-struct_definition		
-	: STRUCT struct_name '{' struct_members_declaration '}' ';'	{    StructureInsert("", 0);	}
-	;
+ /* This is how a function looks like */
+function: type
+					identifier 											{
+																						func_type = current_dtype;
+																						is_declaration = 0;
+																						current_scope = create_new_scope();
+																					}
 
-struct_name
-	: IDENTIFIER	{	StructureInsert($1, 1);	}
-	;
+					'(' argument_list ')' 					{
+																						is_declaration = 0;
+																						fill_parameter_list($2,param_list,p_idx);
+																						p_idx = 0;
+																						is_func = 1;
+																						p=1;
+																					}
 
-struct_members_declaration
-	: struct_members_declaration struct_members ';'
-	| struct_members ';'
-	;
+					compound_stmt										{
+																						is_func = 0;
+																					}
+          ;
+ /* Now we will define a grammar for how types can be specified */
 
-struct_members
-	: type_specifier IDENTIFIER	{	StructureMemberInsert($2, $1);	}
-	;
+type : data_type pointer
+     {is_declaration = 1; }
+     | data_type
+     {is_declaration = 1; }
+		 ;
 
-function_definition		
-	: declaration_specifiers declarator compound_statement		{		ScopeAndParamInsert(lineno);	 }
-	| declarator compound_statement		{		ScopeAndParamInsert(lineno);	 }
-	;
+pointer: '*' pointer
+    	 | '*'
+       ;
 
-fundamental_exp
-	: IDENTIFIER		{	if(!(strcmp($1,"printf") == 0 || strcmp($1,"printf") == 0)){
-						int flag;
-						flag = CheckIdentifierReuse($1);	
-						if(flag == 0){
-							err++;
-							yyerror("Variable has to be declared first before use");
-						}
-					}
-				}
-	| STRING_CONSTANT		{ ConstantInsert($1, "string"); }
-	| CHAR_CONSTANT     { ConstantInsert($1, "char"); }
-	| FLOAT_CONSTANT	  { ConstantInsert($1, "float"); }
-	| INT_CONSTANT			{ ConstantInsert($1, "int"); }
-	| '(' expression ')'
-	;
+data_type : sign_specifier type_specifier
+    			| type_specifier
+    			;
 
+sign_specifier : SIGNED
+    					 | UNSIGNED
+    			 		 ;
 
-secondary_exp
-	: fundamental_exp
-	| secondary_exp '[' expression ']'
-	| secondary_exp '(' ')'
-	| secondary_exp '(' arg_list ')'	
-	| secondary_exp '.' IDENTIFIER
-	| secondary_exp INC_OP
-	| secondary_exp DEC_OP
-	;
+type_specifier :INT                    {current_dtype = INT;}
+    |SHORT INT                         {current_dtype = SHORT;}
+    |SHORT                             {current_dtype = SHORT;}
+    |LONG                              {current_dtype = LONG;}
+    |LONG INT		               {current_dtype = LONG;}
+    |LONG_LONG                         {current_dtype = LONG_LONG;}
+    |LONG_LONG INT                     {current_dtype = LONG_LONG;}
+    |CHAR 				{current_dtype = CHAR;}
+    |FLOAT 				{current_dtype = FLOAT;}
+    |DOUBLE 				{current_dtype = DOUBLE;}
+    |VOID				{current_dtype = VOID;}
+    ;
 
-arg_list
-	: assignment_expression
-	| arg_list ',' assignment_expression
-	;
+ /* grammar rules for argument list */
+ /* argument list can be empty */
+argument_list : arguments
+    					|
+    					;
+ /* arguments are comma separated TYPE ID pairs */
+arguments : arguments ',' arg
+    			| arg
+    			;
 
-unary_expression
-	: secondary_exp
-	| INC_OP unary_expression
-	| DEC_OP unary_expression
-	| unary_operator typecast_exp
-	;
+ /* Each arg is a TYPE ID pair */
+arg : type identifier									{param_list[p_idx++] = $2->data_type;}
+    ;
 
-unary_operator
-	: '&'
-	| '*'
-	| '+'
-	| '-'
-	| '~'
-	| '!'
-	;
+ /* Generic statement. Can be compound or a single statement */
+stmt:compound_stmt
+    |single_stmt
+    ;
 
-typecast_exp
-	: unary_expression
-	| '(' type_name ')' typecast_exp
-	;
+ /* The function body is covered in braces and has multiple statements. */
+compound_stmt :
+							'{' 							{
+																		if(!p)current_scope = create_new_scope();
+																		else p = 0;
+																}
 
-multdivmod_exp
-	: typecast_exp
-	| multdivmod_exp '*' typecast_exp
-	| multdivmod_exp '/' typecast_exp
-	| multdivmod_exp '%' typecast_exp
-	;
+							statements
 
-addsub_exp
-	: multdivmod_exp
-	| addsub_exp '+' multdivmod_exp
-	| addsub_exp '-' multdivmod_exp
-	;
+							'}' 						{current_scope = exit_scope();}
+    ;
 
-shift_exp
-	: addsub_exp
-	| shift_exp LEFT_OP addsub_exp
-	| shift_exp RIGHT_OP addsub_exp
-	;
+statements:statements stmt
+    |
+    ;
 
-relational_expression
-	: shift_exp
-	| relational_expression '<' shift_exp
-	| relational_expression '>' shift_exp
-	| relational_expression LE_OP shift_exp
-	| relational_expression GE_OP shift_exp
-	;
+ /* Grammar for what constitutes every individual statement */
+single_stmt :if_block
+    |for_block
+    |while_block
+    |declaration
+    |function_call ';'
+		|RETURN ';'								  {
+																	if(is_func)
+																	{
+																		if(func_type != VOID)
+																			yyerror("return type (VOID) does not match function type");
+																	}
+																  else yyerror("return statement not inside function definition");
+																}
 
-equality_expression
-	: relational_expression
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
-	;
+		|CONTINUE ';'							 {if(!is_loop) {yyerror("Illegal use of continue");}}
+		|BREAK ';'                 {if(!is_loop) {yyerror("Illegal use of break");}}
 
-and_expression
-	: equality_expression
-	| and_expression '&' equality_expression
-	;
+		|RETURN sub_expr ';'			 {
+																	if(is_func)
+																	{
+																		if(func_type != $2)
+																			yyerror("return type does not match function type");
+																	}
+																	else yyerror("return statement not in function definition");
+															 }
+    ;
 
-exor_expression
-	: and_expression
-	| exor_expression '^' and_expression
-	;
+for_block:FOR '(' expression_stmt  expression_stmt ')' {is_loop = 1;} stmt {is_loop = 0;}
+    		 |FOR '(' expression_stmt expression_stmt expression ')' {is_loop = 1;} stmt {is_loop = 0;}
+    		 ;
 
-unary_or_expression
-	: exor_expression
-	| unary_or_expression '|' exor_expression
-	;
+if_block:IF '(' expression ')' stmt 								%prec LOWER_THAN_ELSE
+				|IF '(' expression ')' stmt ELSE stmt
+    ;
 
-logical_and_expression
-	: unary_or_expression
-	| logical_and_expression AND_OP unary_or_expression
-	;
+while_block: WHILE '(' expression	')' {is_loop = 1;} stmt {is_loop = 0;}
+		;
 
-logical_or_expression
-	: logical_and_expression
-	| logical_or_expression OR_OP logical_and_expression
-	;
-
-conditional_expression
-	: logical_or_expression
-	| logical_or_expression '?' expression ':' conditional_expression
-	;
-
-assignment_expression
-	: conditional_expression
-	| unary_expression assignment_operator assignment_expression
-	;
-
-assignment_operator
-	: '='
-	| MUL_ASSIGN
-	| DIV_ASSIGN
-	| MOD_ASSIGN
-	| ADD_ASSIGN
-	| SUB_ASSIGN
-	| LEFT_ASSIGN
-	| RIGHT_ASSIGN
-	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
-	;
-
-expression
-	: assignment_expression
-	| expression ',' assignment_expression
-	;
-
-constant_expression
-	: conditional_expression
-	;
-
-declaration
-	: declaration_specifiers init_declarator_list ';'
-	| error
-	;
-
-declaration_specifiers
-	: type_specifier	{ strcpy(type, $1); }
-	| type_specifier declaration_specifiers	{ strcpy(temp, $1); strcat(temp, " "); strcat(temp, type); strcpy(type, temp); }
-	;
-
-init_declarator_list
-	: init_declarator
-	| init_declarator_list ',' init_declarator
-	;
-
-init_declarator
-	: declarator 
-	| declarator '=' init
-	;
-
-type_specifier
-	: VOID			{ $$ = "void"; }
-	| CHAR			{ $$ = "char"; }
-	| CHAR_			{ $$ = "char*"; }
-	| SHORT			{ $$ = "short"; }
-	| INT			{ $$ = "int"; }
-	| INT_			{ $$ = "int*"; }
-	| LONG			{ $$ = "long"; }
-	| FLOAT			{ $$ = "float"; }
-	| SIGNED		{ $$ = "signed"; }
-	| UNSIGNED		{ $$ = "unsigned"; }
-	;
-
-type_specifier_list
-	: type_specifier type_specifier_list
-	| type_specifier
-	;
-
-declarator
-	: direct_declarator
-	;
-
-direct_declarator
-	: IDENTIFIER								{  SymbolInsert($1, type); }
-	| '(' declarator ')'
-	| direct_declarator '[' constant_expression ']'		{	strcpy(array_dim,$3);	
-									array_dim[strlen(array_dim)-1]='\0';	}
-	| direct_declarator '[' ']'	{	strcpy(array_dim,"0");	}
-	| direct_declarator '(' parameter_type_list ')'		
-	| direct_declarator '(' identifier_list ')'			
-	| direct_declarator '(' ')'
-	;
+declaration: type  declaration_list ';'
+           {is_declaration = 0; }
+					 | declaration_list ';'
+					 | unary_expr ';'
 
 
-parameter_type_list
-	: parameter_list
-	;
+declaration_list: declaration_list ',' sub_decl
+								|sub_decl
+								;
 
-parameter_list
-	: parameter_declaration	
-	| parameter_list ',' parameter_declaration	
-	;
+sub_decl: assignment_expr
+    		|identifier
+    		|array_access
+				;
 
-parameter_declaration
-	: declaration_specifiers declarator	{ 
-		UpdateSymbolTable();
-		strcat(param_list,$1);
-		strcat(param_list," ");
-		strcpy(temp,$2);
-		temp[strlen(temp)-1]='\0';
-		strcat(param_list,temp);
-		strcat(param_list,", ");
-		}	
-	| declaration_specifiers abstract_declarator
-	| declaration_specifiers 
-	;
+/* This is because we can have empty expession statements inside for loops */
+expression_stmt: expression ';'
+    					 | ';'
+    			 		 ;
 
-identifier_list
-	: IDENTIFIER	{ printf("identifier_list : *%s*\n",$1);	}
-	| identifier_list ',' IDENTIFIER
-	;
+expression: expression ',' sub_expr
+    			| sub_expr
+					;
 
-type_name
-	: type_specifier_list
-	| type_specifier_list abstract_declarator
-	;
+sub_expr:
+    sub_expr '>' sub_expr															  {type_check($1,$3,2); $$ = $1;}
+    |sub_expr '<' sub_expr															{type_check($1,$3,2); $$ = $1;}
+    |sub_expr EQ sub_expr																{type_check($1,$3,2); $$ = $1;}
+    |sub_expr NOT_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
+    |sub_expr LS_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
+    |sub_expr GR_EQ sub_expr														{type_check($1,$3,2); $$ = $1;}
+		|sub_expr LOGICAL_AND sub_expr											{type_check($1,$3,2); $$ = $1;}
+		|sub_expr LOGICAL_OR sub_expr												{type_check($1,$3,2); $$ = $1;}
+		|'!' sub_expr																				{$$ = $2;}
+		|arithmetic_expr																		{$$ = $1;}
+    |assignment_expr																		{$$ = $1;}
+		|unary_expr																					{$$ = $1;}
+    ;
 
-abstract_declarator
-	: direct_abstract_declarator
-	;
 
-direct_abstract_declarator
-	: '(' abstract_declarator ')'
-	| '[' ']'
-	| '[' constant_expression ']'
-	| direct_abstract_declarator '[' ']'
-	| direct_abstract_declarator '[' constant_expression ']'
-	| '(' ')'
-	| '(' parameter_type_list ')'
-	| direct_abstract_declarator '(' ')'
-	| direct_abstract_declarator '(' parameter_type_list ')'
-	;
+assignment_expr :
+		lhs assign_op  arithmetic_expr												{type_check($1,$3,1); $$ = $3; rhs=0;}
+    |lhs assign_op  array_access													{type_check($1,$3,1); $$ = $3;rhs=0;}
+    |lhs assign_op  function_call												{type_check($1,$3,1); $$ = $3;rhs=0;}
+	|lhs assign_op  unary_expr                                                  {type_check($1,$3,1); $$ = $3;rhs=0;}
+		|unary_expr assign_op  unary_expr										{type_check($1,$3,1); $$ = $3;rhs=0;}
+    ;
 
-init
-	: assignment_expression		{	strcpy($$,$1);		} 
-	| '{' init_list '}'
-	| '{' init_list ',' '}'
-	;
+unary_expr:	identifier INCREMENT												{$$ = $1->data_type;}
+					| identifier DECREMENT												{$$ = $1->data_type;}
+					| DECREMENT identifier												{$$ = $2->data_type;}
+					| INCREMENT identifier												{$$ = $2->data_type;}
 
-init_list
-	: init
-	| init_list ',' init
-	;
+lhs: identifier																					{$$ = $1->data_type;}
+   | array_access																				{$$ = $1;}
+	 ;
 
-statement
-	: compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| switch_statement
-	| jump_statement
-	;
+identifier:IDENTIFIER                                    {
+                                                                    if(is_declaration
+                                                                    && !rhs) 
+                                                                    {
+									$1 = insert(SYMBOL_TABLE,yytext,INT_MAX,current_dtype);
+                                                                        if($1 == NULL) yyerror("Redeclaration of variable");
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        $1 = search_recursive(yytext);
+                                                                        if($1 == NULL) yyerror("Variable not declared");
+                                                                    }
+                                                                    $$ = $1;
+                                                            }
+    			 ;
 
-compound_statement
-	: '{' '}'
-	| '{' statement_list '}'
-	| '{' declaration_list '}'
-	| '{' declaration_list statement_list '}'
-	| '{' declaration_list statement_list declaration_list statement_list '}'
-	| '{' declaration_list statement_list declaration_list '}'
-	| '{' statement_list declaration_list statement_list '}'
-	;
+assign_op:'=' {rhs=1;}
+    |ADD_ASSIGN {rhs=1;} 
+    |SUB_ASSIGN {rhs=1;}
+    |MUL_ASSIGN {rhs=1;}
+    |DIV_ASSIGN {rhs=1;}
+    |MOD_ASSIGN {rhs=1;}
+    ;
 
-declaration_list
-	: declaration
-	| declaration_list declaration
-	;
+arithmetic_expr: arithmetic_expr '+' arithmetic_expr				{type_check($1,$3,0);}
+    |arithmetic_expr '-' arithmetic_expr										{type_check($1,$3,0);}
+    |arithmetic_expr '*' arithmetic_expr										{type_check($1,$3,0);}
+    |arithmetic_expr '/' arithmetic_expr										{type_check($1,$3,0);}
+		|arithmetic_expr '%' arithmetic_expr										{type_check($1,$3,0);}
+		|'(' arithmetic_expr ')'																{$$ = $2;}
+    |'-' arithmetic_expr %prec UMINUS												{$$ = $2;}
+    |identifier																							{$$ = $1->data_type;}
+    |constant																								{$$ = $1->data_type;}
+    ;
 
-statement_list
-	: statement
-	| statement_list statement
-	;
+constant: DEC_CONSTANT 												{$1->is_constant=1; $$ = $1;}
+    | HEX_CONSTANT														{$1->is_constant=1; $$ = $1;}
+		| CHAR_CONSTANT														{$1->is_constant=1; $$ = $1;}
+		| FLOAT_CONSTANT													{$1->is_constant=1; $$ = $1;}
+    ;
 
-expression_statement
-	: ';'
-	| expression ';'
-	;
+array_access: identifier '[' array_index ']'								{
+																															if(is_declaration)
+																															{
+																																if($3->value <= 0)
+																																	yyerror("size of array is not positive");
 
-selection_statement
-	: IF '(' expression ')' statement %prec NO_ELSE
-	| IF '(' expression ')' statement ELSE statement
-	;
+																																else
+                                                                                                                                if($3->is_constant && !rhs)
+																																	$1->array_dimension = $3->value;
+																																	else if(rhs){
+																																	{
+																																if($3->value > $1->array_dimension)
+																																	yyerror("Array index out of bound");
 
-iteration_statement
-	: WHILE '(' expression ')' statement
-	: FOR '(' expression ';' expression ';' expression ')'
-	;
+																																if($3->value < 0)
+																																	yyerror("Array index cannot be negative");
+																															}
+																															}
+																															}
 
-switch_statement
-	: SWITCH '(' expression ')' switch_body
-	;
+																															else if($3->is_constant)
+																															{
+																																if($3->value > $1->array_dimension)
+																																	yyerror("Array index out of bound");
 
-switch_body
-	: DEFAULT ':' case_body
-	| CASE expression ':' case_body
-	;
+																																if($3->value < 0)
+																																	yyerror("Array index cannot be negative");
+																															}
+																															$$ = $1->data_type;
+																														}
 
-case_body
-	: case_body statement
-	| statement
-	;
+array_index: constant																		{$$ = $1;}
+					 | identifier																	{$$ = $1;}
+					 ;
 
-jump_statement
-	: CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
-	;
+function_call: identifier '(' parameter_list ')'				{
+																													$$ = $1->data_type;
+																													check_parameter_list($1,param_list,p_idx);
+																													p_idx = 0;
+																												}
 
+             | identifier '(' ')'												{
+							 																						 $$ = $1->data_type;
+																													 check_parameter_list($1,param_list,p_idx);
+																													 p_idx = 0;
+																												}
+             ;
+
+parameter_list:
+              parameter_list ','  parameter
+              |parameter
+              ;
+
+parameter: sub_expr																			{param_list[p_idx++] = $1;}
+				 | STRING																				{param_list[p_idx++] = STRING;}
+				 ;
 %%
-#include"lex.yy.c"
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
 
 #define ANSI_COLOR_RED		"\x1b[31m"
 #define ANSI_COLOR_GREEN	"\x1b[32m"
 #define ANSI_COLOR_YELLOW	"\x1b[33m"
-#define ANSI_COLOR_BLUE		"\x1b[34m"
-#define ANSI_COLOR_MAGENTA	"\x1b[35m"
 #define ANSI_COLOR_CYAN		"\x1b[36m"
 #define ANSI_COLOR_RESET	"\x1b[0m"
 
-struct Symbol
+void type_check(int left, int right, int flag)
 {
-	char token[100];	//Name of the identifier
-	char tokenType[100];	//Type of identifier
-	int boundary_begin;	//Beginning of scope
-	int boundary_end;	//End of scope
-	int nesting_level;	//Degree of Nesting
-	char paramList[200];	//Parameter list
-	int attributeNo;	//Attribute number in list
-	char array_dimension[100];
-
-}SymbolTable[100000]; 
-
-struct Constant
-{
-	char token[100];	//Name of constant;
-	char dataType[100];	//Datatype of constant
-	int lineNo;		//Line number in which it is detected
-	int attributeNo;	//Attribute number in list
-
-}ConstantTable[100000];
-
-struct StructureMembers{
-	char MemberName[100];	// Member name
-	char MemberType[100];	// Member type
-	int lineNo;		//Line number in which it is detected
-	struct StructureMembers *next;
-};
-
-struct Structure
-{
-	char name[100];		//Name of struct
-	int boundary_begin;	//Beginning of scope
-	int boundary_end;	//End of scope
-	struct StructureMembers *stm;
-
-}StructureTable[100000] = {"", 0, 0, NULL};
-
-int s=0;	// Number of symbols in the symbol table
-int c=0;	// Number of constant in the constant table
-int st=0;       // Number of structures declared
-
-// Function to insert value in Constant Table
-void ConstantInsert(char* tokenName, char* datatype)
-{
-	strcpy(ConstantTable[c].token, tokenName);
-	strcpy(ConstantTable[c].dataType, datatype);
-	ConstantTable[c].lineNo = lineno;
-	ConstantTable[c].attributeNo = c+1;
-	c++;
-}
-
-// Function to print values in Constant Table
-void showConstantTable()
-{
-	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* CONSTANT TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number\tLine number\t DataType\tConstant value\n\n");
-	int itr;
-	for(itr=0;itr<c;itr++){
-		printf("\t%-17d %-17d %-18s %-50s\n",ConstantTable[itr].attributeNo,ConstantTable[itr].lineNo,ConstantTable[itr].dataType,ConstantTable[itr].token);
-	}
-}
-
-// Function to insert value in Symbol Table
-void SymbolInsert(char* tokenName, char* tokenType)
-{
-	int itr;
-	for(itr=0;itr<s;itr++){
-		if(strcmp(SymbolTable[itr].token,tokenName) == 0){
-			if(SymbolTable[itr].boundary_end == -1 && SymbolTable[itr].nesting_level >= nestingLevel){
-				err++;
-				yyerror("Redeclaration of variable");
-				return;
-			}
+	if(left != right)
+	{
+		switch(flag)
+		{
+			case 0: yyerror("Type mismatch in arithmetic expression"); break;
+			case 1: yyerror("Type mismatch in assignment expression"); break;
+			case 2: yyerror("Type mismatch in logical expression"); break;
 		}
 	}
-	strcpy(SymbolTable[s].token, tokenName);
-	if(tokenType[strlen(tokenType)-1]=='*'){
-		strcpy(tokenType,"pointer");
-	}
-	strcpy(SymbolTable[s].tokenType, tokenType);
-	SymbolTable[s].boundary_begin = lineno;
-	SymbolTable[s].boundary_end = -1;
-	SymbolTable[s].nesting_level = nestingLevel;
-	SymbolTable[s].attributeNo = s+1;
-	strcpy(SymbolTable[s].paramList, "N/A");
-	strcpy(SymbolTable[s-1].array_dimension,"N/A");
-	if(strcmp(array_dim, "")!=0){
-		strcpy(SymbolTable[s-1].array_dimension, array_dim);
-		if(strcmp(SymbolTable[s-1].tokenType,"char")==0)		strcpy(SymbolTable[s-1].tokenType,"string");
-		if(strcmp(SymbolTable[s-1].tokenType,"pointer")==0)		strcpy(SymbolTable[s-1].tokenType,"array of pointers");
-		else				strcpy(SymbolTable[s-1].tokenType,"array");
-	}
-	strcpy(array_dim,"");
-	s++;
-}
-
-
-//Function to add Parameter List
-int ScopeAndParamInsert(int lineNo)
-{
-
-	int itr, insert = 1;
-	for(itr=0;itr<s;itr++){
-		if(SymbolTable[itr].boundary_end == -1){
-			if(insert==1){
-				if(strlen(param_list) > 2 && param_list[strlen(param_list)-2] == ',')	param_list[strlen(param_list)-2] = '\0';
-				if(strlen(param_list)==0)	strcpy(param_list,"Empty");
-				strcpy(SymbolTable[itr].paramList,param_list);
-				insert = 0;
-				strcpy(param_list,"");
-				strcpy(SymbolTable[itr].tokenType,"function");
-				SymbolTable[itr].nesting_level++;
-			}
-			SymbolTable[itr].boundary_end = lineNo;
-		}
-	}
-}
-
-// Function to print values in Symbol Table
-void showSymbolTable()
-{
-	strcpy(SymbolTable[s-1].array_dimension,"N/A");
-	if(strcmp(array_dim, "")!=0){
-		strcpy(SymbolTable[s-1].array_dimension, array_dim);
-		if(strcmp(SymbolTable[s-1].tokenType,"char")==0)		strcpy(SymbolTable[s-1].tokenType,"string");
-		if(strcmp(SymbolTable[s-1].tokenType,"pointer")==0)		strcpy(SymbolTable[s-1].tokenType,"array of pointers");
-		else				strcpy(SymbolTable[s-1].tokenType,"array");
-	}
-	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* SYMBOL TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Attribute Number\tBoundary(line no)  Nesting level  Identifier Name\tDataType         \tArray dimension\t\tParameter List\n\n");
-	int itr;
-	for(itr=0;itr<s;itr++){
-		if(err == 1 && SymbolTable[itr].boundary_end == -1){
-			SymbolTable[itr].boundary_end = lineno;
-		}
-		printf("\t%-20d %-3d -  %-13d %-10d  %-15s   %-24s   %-23s %-40s\n",SymbolTable[itr].attributeNo,SymbolTable[itr].boundary_begin,SymbolTable[itr].boundary_end,SymbolTable[itr].nesting_level,SymbolTable[itr].token,SymbolTable[itr].tokenType,SymbolTable[itr].array_dimension,SymbolTable[itr].paramList);
-	}
-}
-
-// Function to insert struct in Structure Table
-void StructureInsert(char* structName, int flag){
-	if(flag == 0){
-		StructureTable[st].boundary_end = lineno;
-		st++;
-		return ;
-	}
-	int itr;
-	for(itr = 0; itr < st; itr++){
-		if(strcmp(StructureTable[itr].name, structName)==0){
-			err++;
-			yyerror("Redeclaration of structure\n");
-			return;
-		}
-	}
-	strcpy(StructureTable[st].name, structName);
-	StructureTable[st].boundary_begin = lineno;
-}
-
-// Function to insert structure members in Structure Table
-void StructureMemberInsert(char* name, char* type){
-	struct StructureMembers *m = malloc(sizeof(struct StructureMembers));
-	strcpy(m->MemberName, name);
-	strcpy(m->MemberType, type);
-	m->lineNo = lineno;
-	m->next = NULL;
-	struct StructureMembers *ptr = StructureTable[st].stm;
-	if(ptr == NULL){
-		StructureTable[st].stm = m;
-		return ;
-	}
-	if(strcmp(ptr->MemberName, name)==0){
-		err++;
-		yyerror("Redeclaration of member of structure member\n");
-		return;
-	}
-	while(ptr->next != NULL){
-		if(strcmp((ptr->next)->MemberName, name)==0){
-			err++;
-			yyerror("Redeclaration of member of structure member\n");
-			return;
-		}
-		ptr = ptr->next;
-	}
-	ptr->next = m;
-}
-
-// Function to print values in Structure Table
-void showStructureTable()
-{
-	printf("\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* STRUCTURE TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n");
-	printf("Structure name\t   Boundary(line no)\t  Member name\t   Member type\t\tLine number\n\n");
-	int itr;
-	struct StructureMembers *ptr;
-	for(itr = 0; itr < st; itr++){
-		ptr = StructureTable[itr].stm;
-		while(ptr != NULL){
-			printf("\t%-15s %-3d -  %-13d %-18s %-18s %-3d\n",StructureTable[itr].name,StructureTable[itr].boundary_begin,StructureTable[itr].boundary_end,ptr->MemberName,ptr->MemberType,ptr->lineNo);
-			ptr = ptr->next;
-		}
-
-	}
-}
-
-//Function to check if an identifer is in scope or not
-int CheckIdentifierReuse(char* tokenName)
-{
-
-	int itr;
-	for(itr=0;itr<st;itr++){
-		if(strcmp(StructureTable[itr].name,tokenName) == 0){
-			err++;
-			yyerror("A structure with same name is already declared");
-			return 0;
-		}
-	}	
-	for(itr=0;itr<s;itr++){
-		if(strcmp(SymbolTable[itr].token,tokenName) == 0){
-			if(SymbolTable[itr].boundary_end == -1 && SymbolTable[itr].nesting_level <= nestingLevel){
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
-
-//Function to update nesting levels for variables in parameter list
-void UpdateSymbolTable(){
-	SymbolTable[s-1].nesting_level++;
 }
 
 int main(int argc, char *argv[])
 {
-	yyin = fopen(argv[1], "r");
-	yyparse();
-	if(err==0)
-		printf(ANSI_COLOR_GREEN "\nStatus: PARSING COMPLETE" ANSI_COLOR_RESET "\n");
-	else
-		printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED" ANSI_COLOR_RESET "\n");
-	fclose(yyin);
+	int itr;
+	for(itr = 0; itr <NUM_TABLES; itr++)
+	 {
+	  symbol_table_list[itr].symbol_table = NULL;
+	  symbol_table_list[itr].parent = -1;
+	}
 
-	showSymbolTable();
-	showConstantTable();
-	showStructureTable();
+	constant_table = create_table();
+	symbol_table_list[0].symbol_table = create_table();
+	yyin = fopen(argv[1], "r");
+
+	if(!yyparse())
+	{
+		printf(ANSI_COLOR_GREEN "\nStatus: PARSING COMPLETE\n" ANSI_COLOR_RESET "\n");
+	}
+	else
+	{
+		printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED!\n" ANSI_COLOR_RESET "\n");
+	}
+
+	printf( ANSI_COLOR_CYAN "\n\n\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* STRUCTURE TABLE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n" ANSI_COLOR_RESET);
+	display_symbol_table();
+
+	printf( ANSI_COLOR_CYAN "\n\n\n*-*-*-*-*-*-*-*-*-*-* CONSTANT TABLE *-*-*-*-*-*-*-*-*-*-*\n\n" ANSI_COLOR_RESET);
+	display_constant_table(constant_table);
+
+
+	fclose(yyin);
 	return 0;
 }
-extern char *yytext;
-yyerror(char *s)
+
+int yyerror(char *msg)
 {
-	err=1;
-	printf(ANSI_COLOR_YELLOW "\nLine %d : %s\n\n" ANSI_COLOR_RESET, (lineno), s);
-	printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED" ANSI_COLOR_RESET "\n");
-	showSymbolTable();
-	showConstantTable();
-	showStructureTable();
+	printf(ANSI_COLOR_YELLOW "\nLine %d : %s Token: %s\n" ANSI_COLOR_RESET, yylineno, msg, yytext);
+	printf(ANSI_COLOR_RED "\nStatus: PARSING FAILED!" ANSI_COLOR_RESET "\n");
 	exit(0);
 }

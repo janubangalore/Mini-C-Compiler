@@ -1,103 +1,95 @@
-alpha 		[A-Za-z_]
-fl			(f|F|l|L)
-ul			(u|U|l|L)*
-digit 		[0-9]
-space 		[ ]
-exp			[Ee][+-]?{digit}+
-
 %{
+
+#include <stdlib.h>
 #include <stdio.h>
-int lineno = 1, err = 0, nestingLevel = 0;
+#include <limits.h>
+
+#include "y.tab.h"
+entry_t** constant_table;
+
+int cmnt_strt = 0, yylineno =1;
+
 %}
 
+letter [a-zA-Z]
+digit [0-9]
+ws  [ \t\r\f\v]+
+identifier (_|{letter})({letter}|{digit}|_){0,31}
+hex [0-9a-f]
+space [ ]
+
 %%
-\n  	{ lineno++; }
+\n                              {yylineno++;}
 "/*"	{ multicomment(); }
 "//"	{ singlecomment(); }
-"#include<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", lineno);	}
-"#include"({space})"<"({alpha})*".h>"	{	printf("\nLine %d : Found header file\n", lineno);	}
-"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", lineno);  }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", lineno);  }
-"#define"({space})""({alpha}({alpha}|{digit})*)""({space})""({alpha}({alpha}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", lineno); }
-"#"({alpha})	{	err=1;	yyerror("Invalid headerfile declaration!");	}
+"int"                             {return INT;}
+"char"                            {return CHAR;}
+"float"                           {return FLOAT;}
+"double"                           {return DOUBLE;}
+"void"                            {return VOID;}
+"long"                            {return LONG;}
+"long long"                       {return LONG_LONG;}
+"short"                           {return SHORT;}
+"signed"                          {return SIGNED;}
+"unsigned"                        {return UNSIGNED;}
+"for"                             {return FOR;}
+"while"                           {return WHILE;}
+"break"                           {return BREAK;}
+"continue"                        {return CONTINUE;}
+"if"                              {return IF;}
+"else"                            {return ELSE;}
+"return"                          {return RETURN;}
 
-\"[^\n]*\" 			{ yylval = yytext; return STRING_CONSTANT; }
-\'{alpha}\' 			{ yylval = yytext; return CHAR_CONSTANT; }
-{digit}+    			{ yylval = yytext; return INT_CONSTANT; }
-({digit}+)\.({digit}+) 		{ yylval = yytext; return FLOAT_CONSTANT; }
-({digit}+)\.({digit}+)([eE][-+]?[0-9]+)? 	{ yylval = yytext; return FLOAT_CONSTANT; }
+{identifier}                      {return  IDENTIFIER;}
+{ws}                              ;
+[+\-]?[0][x|X]{hex}+[lLuU]?       { yylval.entry = insert(constant_table,yytext,(int)strtol(yytext, NULL, 16),INT); return  HEX_CONSTANT;}
+'({letter}|{digit})'              { yylval.entry = insert(constant_table,yytext,yytext[1],CHAR); return CHAR_CONSTANT;}
+[+\-]?{digit}+[lLuU]?             { yylval.entry = insert(constant_table,yytext,atoi(yytext),INT); return  DEC_CONSTANT;}
+[+\-]?{digit}*\.{digit}+          { yylval.entry = insert(constant_table,yytext,atof(yytext),FLOAT); return FLOAT_CONSTANT;}
 
-"sizeof"		{  return SIZEOF; }
-"++"			{  return INC_OP; }
-"--"			{  return DEC_OP; }
-"<<"			{  return LEFT_OP; }
-">>"			{  return RIGHT_OP; }
-"<="			{  return LE_OP; }
-">="			{  return GE_OP; }
-"=="			{  return EQ_OP; }
-"!="			{  return NE_OP; }
-"&&"			{  return AND_OP; }
-"||"			{  return OR_OP; }
-"*="			{  return MUL_ASSIGN; }
-"/="			{  return DIV_ASSIGN; }
-"%="			{  return MOD_ASSIGN; }
-"+="			{  return ADD_ASSIGN; }
-"-="			{  return SUB_ASSIGN; }
-"<<="			{  return LEFT_ASSIGN; }
-">>="			{  return RIGHT_ASSIGN; }
-"&="			{  return AND_ASSIGN; }
-"^="			{  return XOR_ASSIGN; }
-"|="			{  return OR_ASSIGN; }
-"char"			{  yylval = yytext; return CHAR; }
-"char*"			{  yylval = yytext; return CHAR_; }
-"short"			{  yylval = yytext; return SHORT; }
-"int"			{  yylval = yytext; return INT; }
-"float"			{  yylval = yytext; return FLOAT; }
-"double"		{  yylval = yytext; return DOUBLE; }
-"int*"			{  yylval = yytext; return INT_; }
-"long"			{  yylval = yytext; return LONG; }
-"signed"		{  yylval = yytext; return SIGNED; }
-"unsigned"		{  yylval = yytext; return UNSIGNED; }
-"void"			{  yylval = yytext; return VOID; }
-"if"			{  return IF; }
-"else"			{  return ELSE; }
-"while"			{  return WHILE; }
-"for"			{  return FOR; }
-"struct"		{  return STRUCT; }
-"break"			{  return BREAK; }
-"return"		{  return RETURN; }
-"switch"		{  return SWITCH; }
-"default"		{  return DEFAULT; }
-"case"			{  return CASE; }
-";"			{  return(';'); }
-("{")			{  nestingLevel++;	return('{'); }
-("}")			{  nestingLevel--;	return('}'); }
-","			{  return(','); }
-":"			{  return(':'); }
-"="			{  return('='); }
-"("			{  return('('); }
-")"			{  return(')'); }
-("["|"<:")		{  return('['); }
-("]"|":>")		{  return(']'); }
-"."			{  return('.'); }
-"&"			{  return('&'); }
-"!"			{  return('!'); }
-"~"			{  return('~'); }
-"-"			{  return('-'); }
-"+"			{  return('+'); }
-"*"			{  return('*'); }
-"/"			{  return('/'); }
-"%"			{  return('%'); }
-"<"			{  return('<'); }
-">"			{  return('>'); }
-"^"			{  return('^'); }
-"|"			{  return('|'); }
-"?"			{  return('?'); }
-{digit}({alpha}|{digit})*    		{  err=1;	yyerror("Invalid identifier! Identifier doesn't start with digit");	  }
-{alpha}({alpha}|{digit})*    		{  yylval = yytext; return IDENTIFIER;  }
-[ \t\v\n\f]		{  }
-.			{ }
+\"[^\"\n]*\"                      {
+                                    if(yytext[yyleng-2]=='\\') /* check if it was an escaped quote */
+                                    {
+                                      yyless(yyleng-1);       /* push the quote back if it was escaped */
+                                      yymore();
+                                    }
+                                    else
+                                    {
+                                      insert(constant_table,yytext,INT_MAX,STRING);
+                                      return STRING;
+                                    }
+                                  }
+
+\"[^\"\n]*$                     {printf("Line %3d: Unterminated string %s\n",yylineno,yytext);}
+{digit}+({letter}|_)+	          {printf("Line %3d: Illegal identifier name %s\n",yylineno,yytext);}
+
+"#include<"({letter})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}
+"#include"({space})"<"({letter})*".h>"	{	printf("\nLine %d : Found header file\n", yylineno);	}
+"#define"({space})""({letter})""({letter}|{digit})*""({space})""({digit})+"" 			{ printf("\nLine %d : Found macro definition\n", yylineno);  }
+"#define"({space})""({letter}({letter}|{digit})*)""({space})""(({digit}+)\.({digit}+))"" 		{ printf("\nLine %d : Found macro definition\n", yylineno);  }
+"#define"({space})""({letter}({letter}|{digit})*)""({space})""({letter}({letter}|{digit})*)"" 	{ printf("\nLine %d : Found macro definition\n", yylineno); }
+"#"({letter})	{	yyerror("Invalid headerfile declaration!");	}
+
+"--"			                {return DECREMENT;}
+"++"			                {return INCREMENT;}
+"+="                      {return ADD_ASSIGN;}
+"-="                      {return SUB_ASSIGN;}
+"*="                      {return MUL_ASSIGN;}
+"/="                      {return DIV_ASSIGN;}
+"%="                      {return MOD_ASSIGN;}
+
+
+"&&"			                {return LOGICAL_AND;}
+"||"			                {return LOGICAL_OR;}
+"<="			                {return LS_EQ;}
+">="			                {return GR_EQ;}
+"=="			                {return EQ;}
+"!="		                  {return NOT_EQ;}
+
+.                         {return yytext[0];}
+
 %%
+
 
 yywrap()
 {
@@ -110,13 +102,12 @@ multicomment()
 	char star = 'a', comment_end=EOF;
 	while(star!=EOF && count>0){
 		if(star == '\n'){
-			lineno++;
+			yylineno++;
 			star = input();
 		}
 		else if(star == '/'){
 			comment_end = input();
 			if(comment_end == EOF){
-				err++;
 				printf("Reached EOF, but multiline comment isn't ended!");
 				break;
 			}
@@ -132,12 +123,11 @@ multicomment()
 		else if(star == '*'){
 			comment_end = input();
 			if(comment_end == EOF){
-				err++;
 				printf("Reached EOF, but multiline comment isn't ended!");
 				break;
 			}
 			else if(comment_end == '/'){
-				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", lineno, count);
+				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", yylineno, count);
 				count--;
 				if(count>0)	star = input();
 			}
@@ -150,7 +140,6 @@ multicomment()
 		}
 	}
 	if(star == EOF){
-		err++;
 		printf("Reached EOF, but multiline comment isn't ended!");
 	}
 }
@@ -161,8 +150,8 @@ singlecomment()
 	while(comment_end != EOF && comment_end != '\n'){
 		comment_end = input();
 	}
-	printf("\nLine %d : Detected single line comment\n", lineno);
+	printf("\nLine %d : Detected single line comment\n", yylineno);
 	if(comment_end == '\n'){
-		lineno++;
+		yylineno++;
 	}
 }

@@ -7,5 +7,5 @@ int main()
   unsigned int x;
   long int y;
   short int z;
-	return 0;
+  return 0;
 }
