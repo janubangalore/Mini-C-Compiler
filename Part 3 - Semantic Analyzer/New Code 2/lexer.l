@@ -8,7 +8,6 @@
 entry_t** constant_table;
 
 int cmnt_strt = 0;
-int yylineno = 1;
 
 %}
 

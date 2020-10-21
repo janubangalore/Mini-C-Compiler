@@ -226,7 +226,7 @@ void print_dashes(int n)
 
 	int i;
 	for(i=0; i< n; i++)
-	printf("=");
+	printf("-");                         //change
 	printf("\n");
 }
 
@@ -234,21 +234,16 @@ void display_symbol_table()
 {
 
 	int scope,i;
+	print_dashes(140);
+	
+	printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name","Data Type","Scope Level","Array Dimension","Num of params","Param List");  
+	
+	print_dashes(140);
+
 	for(scope=0; scope<=table_index; scope++){
 		entry_t** hash_table_ptr = symbol_table_list[scope].symbol_table;
 
 	entry_t* traverser;
-
-	print_dashes(130);
-
-  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Array Dimension","Num of params","Param List");
-
-
-		print_dashes(130);
-
-	  	printf(" %-20s %-20s %-20s %-20s %-20s %-20s %-20s\n","Line number","Token name","Data Type","Scope level","Array Dimension","Num of params","Param List");
-
-		print_dashes(130);
 
 		for(i=0; i < HASH_TABLE_SIZE; i++)
 		{
@@ -270,8 +265,9 @@ void display_symbol_table()
 			}
 		}
 
-		print_dashes(130);
 	}
+		print_dashes(140);
+
 
 }
 
