@@ -207,23 +207,22 @@ sub_expr:
 assignment_expr :
     lhs assign_op  arithmetic_expr			{	type_check(1,$1,$3);	$$ = $3;	rhs=0; }
     |lhs assign_op  array_access			{	type_check(1,$1,$3);	$$ = $3;	rhs=0; }
-    |lhs assign_op  function_call			{type_check(1,$1,$3); $$ = $3;rhs=0;}
-	|lhs assign_op  unary_expr                                                  {type_check($1,$3,1); $$ = $3;rhs=0;}
-		|unary_expr assign_op  unary_expr										{type_check(1,$1,$3); $$ = $3;rhs=0;}
+    |lhs assign_op  function_call			{       type_check(1,$1,$3);    $$ = $3;        rhs=0;}
+	|lhs assign_op  unary_expr                      {       type_check($1,$3,1);    $$ = $3;        rhs=0;}
+		|unary_expr assign_op  unary_expr	{       type_check(1,$1,$3);    $$ = $3;        rhs=0;}
     ;
 
-unary_expr:	identifier INCREMENT												{$$ = $1->data_type;}
-					| identifier DECREMENT												{$$ = $1->data_type;}
-					| DECREMENT identifier												{$$ = $2->data_type;}
-					| INCREMENT identifier												{$$ = $2->data_type;}
+unary_expr:	identifier INCREMENT						{$$ = $1->data_type;}
+					| identifier DECREMENT			{$$ = $1->data_type;}
+					| DECREMENT identifier			{$$ = $2->data_type;}
+					| INCREMENT identifier			{$$ = $2->data_type;}
 
-lhs: identifier																					{$$ = $1->data_type;}
-   | array_access																				{$$ = $1;}
+lhs: identifier									{$$ = $1->data_type;}
+   | array_access								{$$ = $1;}
 	 ;
 
 identifier:IDENTIFIER                                    {
-                                                                    if(is_declaration
-                                                                    && !rhs) 
+                                                                    if(is_declaration && !rhs) 
                                                                     {
 									$1 = insert(symbol_table_list[current_scope].symbol_table,yytext,INT_MAX,cur_dtype);
                                                                         if($1 == NULL) yyerror("Redeclaration of variable");
@@ -234,79 +233,76 @@ identifier:IDENTIFIER                                    {
                                                                         if($1 == NULL) yyerror("Variable not declared");
                                                                     }
                                                                     $$ = $1;
-                                                            }
+                                                          }
     			 ;
 
-assign_op:'=' {rhs=1;}
-    |ADD_ASSIGN {rhs=1;} 
-    |SUB_ASSIGN {rhs=1;}
-    |MUL_ASSIGN {rhs=1;}
-    |DIV_ASSIGN {rhs=1;}
-    |MOD_ASSIGN {rhs=1;}
+assign_op:'='                                     {  rhs=1;  }
+    |ADD_ASSIGN                                   {  rhs=1;  } 
+    |SUB_ASSIGN                                   {  rhs=1;  }
+    |MUL_ASSIGN                                   {  rhs=1;  }
+    |DIV_ASSIGN                                   {  rhs=1;  }
+    |MOD_ASSIGN                                   {  rhs=1;  }
     ;
 
-arithmetic_expr: arithmetic_expr '+' arithmetic_expr				{type_check(0,$1,$3);}
-    |arithmetic_expr '-' arithmetic_expr					{type_check(0,$1,$3);}
-    |arithmetic_expr '*' arithmetic_expr					{type_check(0,$1,$3);}
-    |arithmetic_expr '/' arithmetic_expr					{type_check(0,$1,$3);}
-		|arithmetic_expr '%' arithmetic_expr				{type_check(0,$1,$3);}
-		|'(' arithmetic_expr ')'																{$$ = $2;}
-    |'-' arithmetic_expr %prec UMINUS												{$$ = $2;}
-    |identifier																							{$$ = $1->data_type;}
-    |constant																								{$$ = $1->data_type;}
+arithmetic_expr: arithmetic_expr '+' arithmetic_expr				{  type_check(0,$1,$3);   }
+    |arithmetic_expr '-' arithmetic_expr					{  type_check(0,$1,$3);   }
+    |arithmetic_expr '*' arithmetic_expr					{  type_check(0,$1,$3);   }
+    |arithmetic_expr '/' arithmetic_expr					{  type_check(0,$1,$3);   }
+		|arithmetic_expr '%' arithmetic_expr				{  type_check(0,$1,$3);   }
+		|'(' arithmetic_expr ')'					{       $$ = $2;          }
+    |'-' arithmetic_expr %prec UMINUS						{       $$ = $2;          }
+    |identifier									{    $$ = $1->data_type;  }
+    |constant								        {    $$ = $1->data_type;  }
     ;
 
-constant: DEC_CONSTANT 												{$1->is_constant=1; $$ = $1;}
-    | HEX_CONSTANT														{$1->is_constant=1; $$ = $1;}
-		| CHAR_CONSTANT														{$1->is_constant=1; $$ = $1;}
-		| FLOAT_CONSTANT													{$1->is_constant=1; $$ = $1;}
+constant: DEC_CONSTANT 						              {  $1->is_constant=1;   $$ = $1; }
+    | HEX_CONSTANT							      {  $1->is_constant=1;   $$ = $1; }
+		| CHAR_CONSTANT						      {  $1->is_constant=1;   $$ = $1; }
+		| FLOAT_CONSTANT					      {  $1->is_constant=1;   $$ = $1; }
     ;
 
-array_access: identifier '[' array_index ']'								{
-																															if(is_declaration)
-																															{
-																																if($3->value <= 0)
-																																	yyerror("size of array is not positive");
+array_access: identifier '[' array_index ']'					{
+										    if(is_declaration)
+										      {
+											if($3->value <= 0)
+											  yyerror("size of array is not positive");
+											if($3->is_constant && !rhs)
+											   $1->array_dimension = $3->value;
+										        else if(rhs){
+											 {
+											 if($3->value > $1->array_dimension)
+											    yyerror("Array index out of bound");
+											 if($3->value < 0)
+											    yyerror("Array index cannot be negative");
+											 }
+									                }
+										      }
 
-																																else
-                                                                                                                                if($3->is_constant && !rhs)
-																																	$1->array_dimension = $3->value;
-																																	else if(rhs){
-																																	{
-																																if($3->value > $1->array_dimension)
-																																	yyerror("Array index out of bound");
+									              else if($3->is_constant)
+									              {
+									              if($3->value > $1->array_dimension)
+									                yyerror("Array index out of bound");
+									              if($3->value < 0)
+									                yyerror("Array index cannot be negative");
+									              }
+								                      $$ = $1->data_type;
+								              }
 
-																																if($3->value < 0)
-																																	yyerror("Array index cannot be negative");
-																															}
-																															}
-																															}
-
-																															else if($3->is_constant)
-																															{
-																																if($3->value > $1->array_dimension)
-																																	yyerror("Array index out of bound");
-
-																																if($3->value < 0)
-																																	yyerror("Array index cannot be negative");
-																															}
-																															$$ = $1->data_type;
-																														}
-
-array_index: constant																		{$$ = $1;}
-					 | identifier																	{$$ = $1;}
+array_index: constant					         { $$ = $1; }
+					 | identifier	         { $$ = $1; }
 					 ;
 
-function_call: identifier '(' parameter_list ')'				{
-																													$$ = $1->data_type;
-																													check_parameter_list($1,param_list,p_idx);
-																													p_idx = 0;
-																												}
+function_call: identifier '(' parameter_list ')'	{
+						        $$ = $1->data_type;
+						        check_parameter_list($1,param_list,p_idx);
+						        p_idx = 0;
+							}
 
-             | identifier '(' ')'												{
-							 																						 $$ = $1->data_type;
-																													 check_parameter_list($1,param_list,p_idx);
-																													 p_idx = 0;
+             | identifier '(' ')'			{
+							$$ = $1->data_type;
+							check_parameter_list($1,param_list,p_idx);
+							p_idx = 0;
+							}
 																												}
              ;
 
