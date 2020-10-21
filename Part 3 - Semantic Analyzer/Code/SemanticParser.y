@@ -303,8 +303,8 @@ function_call: identifier '(' parameter_list ')'	{
 							check_parameter_list($1,param_list,p_idx);
 							p_idx = 0;
 							
-																												}
-             ;
+							}
+					;
 
 parameter_list:
               parameter_list ','  parameter
