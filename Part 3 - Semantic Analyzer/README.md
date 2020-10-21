@@ -7,7 +7,7 @@
 cd Code
 rm a
 lex SemanticScanner.l
-yacc SemanticParser.y
+yacc -dy SemanticParser.y
 gcc y.tab.c -w -o a
 a <input c-filename>
 ```
@@ -17,7 +17,7 @@ a <input c-filename>
 cd Code
 rm ./a
 lex SemanticScanner.l
-yacc SemanticParser.y
+yacc -dy SemanticParser.y
 gcc y.tab.c -w -o a
 ./a <input c-filename>
 ```
@@ -27,7 +27,7 @@ gcc y.tab.c -w -o a
 cd Code
 rm ./a.out
 lex SemanticScanner.l
-yacc SemanticParser.y
+yacc -dy SemanticParser.y
 gcc y.tab.c -ll -ly -w
 ./a.out <input c-filename>
 ```
@@ -37,19 +37,19 @@ gcc y.tab.c -ll -ly -w
 ### Windows
 ```
 cd Code
-bash 'runfile(Windows).sh'
+bash 'run-Windows.sh'
 ```
 
 ### GitBash
 ```
 cd Code
-bash 'runfile(GitBash).sh'
+bash 'run-GB.sh'
 
 ```
 
 ### Linux/Ubuntu
 ```
 cd Code
-bash 'runfile(Linux).sh'
+bash 'run-Linux.sh'
 
 ```
