@@ -1,3 +1,4 @@
+// Infinite loop
 #include <stdio.h>
 
 int k;

@@ -1,3 +1,4 @@
+// Undeclared variable assigned
 #include <stdio.h>
 
 int main()

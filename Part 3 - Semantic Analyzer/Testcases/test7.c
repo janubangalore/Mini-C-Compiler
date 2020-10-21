@@ -1,3 +1,4 @@
+// Function name an identifier
 #include <stdio.h>
 
 int main()

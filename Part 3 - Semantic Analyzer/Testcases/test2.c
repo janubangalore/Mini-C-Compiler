@@ -1,3 +1,4 @@
+//  Working testcase
 #include <stdio.h>
 
 int trial()

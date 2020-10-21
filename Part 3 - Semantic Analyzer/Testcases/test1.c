@@ -1,3 +1,4 @@
+// infinite loop, redefinition of k inside while
 #include <stdio.h>
 
 int b=10;

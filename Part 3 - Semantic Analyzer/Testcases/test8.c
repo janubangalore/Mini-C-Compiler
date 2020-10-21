@@ -1,3 +1,4 @@
+// Working code
 #include <stdio.h>
 int trial(int b, float a)
 {
