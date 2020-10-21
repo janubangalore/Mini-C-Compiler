@@ -226,7 +226,7 @@ void print_dashes(int n)
 
 	int i;
 	for(i=0; i< n; i++)
-	printf("-");                         //change
+	printf("-");                         
 	printf("\n");
 }
 
@@ -252,7 +252,11 @@ void display_symbol_table()
 			{
 				printf(" %-20d", traverser->line_no);
 				
-				printf(" %-20s %-20d %-20d %-20d", traverser->lexeme, traverser->data_type, scope, traverser->array_dimension);
+				printf(" %-20s %-20d %-20d", traverser->lexeme, traverser->data_type, scope);
+				if(traverser->array_dimension==-1)
+				printf(" %-20s","NA");
+				else
+				printf(" %-20d",traverser->array_dimension);
 
 				printf(" %-20d", traverser->num_params);
 
