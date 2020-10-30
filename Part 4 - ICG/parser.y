@@ -1,9 +1,4 @@
-%{
-#include <stdio.h>
-#include <stdlib.h>
-#include<string.h>
-
-%token WHILE IF RETURN STRING PRINT FUNCTION ARRAY ELSE
+%token WHILE IF RETURN STRING PRINT FUNCTION ARRAY ELSE 
 %left LE GE EQ NEQ AND OR '<' '>'
 %right '='
 %left '+' '-'
@@ -11,7 +6,12 @@
 %type<str> IDENTIFIER NUM REAL LE GE EQ NEQ AND OR assignment secondary_assignment constant '=' '+' '-' '*' '/' expression additive_exp multiplicative_exp
 %type<ival> INT FLOAT VOID Type
 
-int mem_address = 100,i=1,type=258,fname[100], nP, fTypes[100], fTypes2[100],temptype,it,stack[100],stackindex=0,end[100],returnArr[10],returnCount,c,b,fl,top=0,label[20],label_index=0,ltop=0,n=0,returnArr[10],iter=0;;
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+
+int mem_address=100,i=1,type=258,fname[100],nP,fTypes[100],fTypes2[100],temptype,it,stack[100],stackindex=0,end[100],returnArr[10],returnCount,c,b,fl,top=0,label[20],label_index=0,ltop=0,n=0,returnArr[10],iter=0;
 char tokenstack[100][10],i_[2]="0",temp[2]="t", null[2]=" ";
 float t[100];
 
@@ -31,6 +31,7 @@ struct symbol
 	int fType[100];
 	int numParams;
 }st[100];
+
 
 void blockBegin()
 {
@@ -226,7 +227,10 @@ void insertTable(char *name, int type, int addr, int arrFlag)
 void printTable()
 {
 	int i,j;
-	printf("\nSymbol Table\n\n");
+        printf("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+	printf("\nSYMBOL TABLE\n\n");
+        printf("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
+
 	printf("\nSNo.\tToken\tAddress\tValue\tScope\tIsArray\tType\tParams\n");
 	for(i=0;i<n;i++)
 	{
@@ -655,12 +659,12 @@ int main(int argc, char *argv[])
 	yyparse();
 	if(!yyparse())
 	{
-		printf("Parsing done\n");
+		printf("\nPARSING COMPLETE\n");
 		printTable();
 	}
 	else
 	{
-		printf("Error\n");
+		printf("\nERROR\n");
 	}
 	fclose(yyin);
 	return 0;
