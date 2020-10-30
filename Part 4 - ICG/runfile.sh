@@ -1,7 +1,7 @@
 #!/bin/bash
 rm ./a.out
-yacc -d sem.y -Wnone
-flex sem.l
+yacc -d parser.y -Wnone
+flex scanner.l
 gcc y.tab.c -ll -ly -w
 echo " "
 echo " "
