@@ -10,13 +10,13 @@ function run() {
 	while [ $start -le $total_testcases ]
 	do
 		printf "\n\n"
-		for i in {1..35}
+		for i in {1..45}
 		do
 			echo -ne "*-"
 		done
 		echo -ne  " ${YELLOW} TESTCASE $start${NOCOLOR}  "
 
-		for i in {1..35}
+		for i in {1..50}
 		do
 			echo -ne "*-"
 		done

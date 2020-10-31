@@ -407,9 +407,11 @@
 	}
 
 	void printST()
-	{
-		printf("%10s | %15s | %10s | %10s | %10s | %15s | %10s |\n","SYMBOL", "CLASS", "TYPE","VALUE", "LINE NO", "NESTING", "PARAMS COUNT");
-		for(int i=0;i<100;i++) {
+
+	{      for(int i=0;i<190;i++)
+               {printf("-");}
+		printf("%30s  %20s  %20s  %20s  %20s  %20s  %30s \n","SYMBOL", "CLASS", "TYPE","VALUE", "LINE NO", "NESTING", "PARAMS COUNT");
+		for(int i=0;i<190;i++) {
 			printf("-");
 		}
 		printf("\n");
@@ -419,15 +421,19 @@
 			{
 				continue;
 			}
-			printf("%10s | %15s | %10s | %10s | %10d | %15d | %10d |\n",ST[i].name, ST[i].class, ST[i].type, ST[i].value, ST[i].lineno, ST[i].nestval, ST[i].params_count);
+			printf("%14s  %25s  %17s  %17s  %20d  %22d  %25d \n",ST[i].name, ST[i].class, ST[i].type, ST[i].value, ST[i].lineno, ST[i].nestval, ST[i].params_count);
 		}
+                for(int i=0;i<190;i++)
+                {printf("-");}
     }
 
 
 	void printCT()
-	{
-		printf("%10s | %15s\n","NAME", "TYPE");
-		for(int i=0;i<81;i++) {
+	{       for(int i=0;i<50;i++)
+                {printf("-");}
+                printf("\n");
+		printf("%14s %15s\n","NAME", "TYPE");
+		for(int i=0;i<50;i++) {
 			printf("-");
 		}
 		printf("\n");
@@ -436,8 +442,11 @@
 			if(CT[i].length == 0)
 				continue;
 
-			printf("%10s | %15s\n",CT[i].name, CT[i].type);
+			printf("%12s %25s\n",CT[i].name, CT[i].type);
 		}
+               for(int i=0;i<50;i++)
+               {printf("-");}
+               printf("\n");
 	}
 	char curid[20];
 	char curtype[20];
