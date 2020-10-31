@@ -29,6 +29,7 @@
 		char name[100];
 		char type[100];
 		int length;
+                int lineno;
 	}CT[1001];
 
 	int currnest = 0;
@@ -77,7 +78,7 @@
 	{
 		int value = hash(str);
 		if(CT[value].length == 0)
-			return 0;
+                        return 0;
 		else if(strcmp(CT[value].name,str)==0)
 			return 1;
 		else
@@ -92,7 +93,17 @@
 			return 0;
 		}
 	}
-
+        void insertCTline(char *str1 ,int line)
+        {
+         for(int i=0; i<1001 ;i++)
+          {
+             if(strcmp(CT[i].name,str1)==0)
+               {
+                CT[i].lineno = line;
+               }  
+        
+           }
+        }
 	void insertSTline(char *str1, int line)
 	{
 		for(int i = 0 ; i < 1001 ; i++)
@@ -254,6 +265,7 @@
 			{
 				strcpy(CT[value].name,str1);
 				strcpy(CT[value].type,str2);
+                                insertCTline(str1,yylineno);
 				CT[value].length = strlen(str1);
 				return;
 			}
@@ -410,7 +422,8 @@
 
 	{      for(int i=0;i<190;i++)
                {printf("-");}
-		printf("%30s  %20s  %20s  %20s  %20s  %20s  %30s \n","SYMBOL", "CLASS", "TYPE","VALUE", "LINE NO", "NESTING", "PARAMS COUNT");
+               printf("\n");
+		printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s %-22s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Param List","Array Dimension");
 		for(int i=0;i<190;i++) {
 			printf("-");
 		}
@@ -421,7 +434,7 @@
 			{
 				continue;
 			}
-			printf("%14s  %25s  %17s  %17s  %20d  %22d  %25d \n",ST[i].name, ST[i].class, ST[i].type, ST[i].value, ST[i].lineno, ST[i].nestval, ST[i].params_count);
+			printf("%5d %20s %20s %22s %16s %22d %20d %20s %22s\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,"NA","NA");
 		}
                 for(int i=0;i<190;i++)
                 {printf("-");}
@@ -429,11 +442,11 @@
 
 
 	void printCT()
-	{       for(int i=0;i<50;i++)
+	{       for(int i=0;i<70;i++)
                 {printf("-");}
                 printf("\n");
-		printf("%14s %15s\n","NAME", "TYPE");
-		for(int i=0;i<50;i++) {
+		printf("%20s %20s %18s\n","Line Number","Constant Name","Data Type");
+		for(int i=0;i<70;i++) {
 			printf("-");
 		}
 		printf("\n");
@@ -442,9 +455,9 @@
 			if(CT[i].length == 0)
 				continue;
 
-			printf("%12s %25s\n",CT[i].name, CT[i].type);
+			printf("%12d %22s %29s\n",CT[i].lineno,CT[i].name, CT[i].type);
 		}
-               for(int i=0;i<50;i++)
+               for(int i=0;i<70;i++)
                {printf("-");}
                printf("\n");
 	}
