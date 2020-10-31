@@ -37,8 +37,8 @@
 
 	int hash(char *str)
 	{
-		int value = 0;
-		for(int i = 0 ; i < strlen(str) ; i++)
+		int value = 0, i;
+		for(i = 0 ; i < strlen(str) ; i++)
 		{
 			value = 10*value + (str[i] - 'A');
 			value = value % 1001;
@@ -50,7 +50,7 @@
 
 	int lookupST(char *str)
 	{
-		int value = hash(str);
+		int value = hash(str), i;
 		if(ST[value].length == 0)
 		{
 			return 0;
@@ -62,7 +62,7 @@
 		}
 		else
 		{
-			for(int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for(i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
 				if(strcmp(ST[i].name,str)==0)
 				{
@@ -76,14 +76,14 @@
 
 	int lookupCT(char *str)
 	{
-		int value = hash(str);
+		int value = hash(str),i;
 		if(CT[value].length == 0)
                         return 0;
 		else if(strcmp(CT[value].name,str)==0)
 			return 1;
 		else
 		{
-			for(int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for(i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
 				if(strcmp(CT[i].name,str)==0)
 				{
@@ -95,7 +95,8 @@
 	}
         void insertCTline(char *str1 ,int line)
         {
-         for(int i=0; i<1001 ;i++)
+	 int i;
+         for(i=0; i<1001 ;i++)
           {
              if(strcmp(CT[i].name,str1)==0)
                {
@@ -106,7 +107,8 @@
         }
 	void insertSTline(char *str1, int line)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,str1)==0)
 			{
@@ -141,9 +143,9 @@
 				return;
 			}
 
-			int pos = 0;
+			int pos = 0, i;
 
-			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for (i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
 				if(ST[i].length == 0)
 				{
@@ -162,7 +164,8 @@
 
 	void insertSTtype(char *str1, char *str2)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,str1)==0)
 			{
@@ -173,7 +176,8 @@
 
 	void insertSTvalue(char *str1, char *str2)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,str1)==0 && ST[i].nestval == currnest)
 			{
@@ -185,11 +189,12 @@
 
 	void insertSTnest(char *s, int nest)
 	{
+		int i;
 		if(lookupST(s) && ST[lookupST(s)].nestval != 9999)
 		{
              int pos = 0;
              int value = hash(s);
-			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for (i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
 				if(ST[i].length == 0)
 				{
@@ -207,7 +212,7 @@
 		}
 		else
 		{
-			for(int i = 0 ; i < 1001 ; i++)
+			for(i = 0 ; i < 1001 ; i++)
 			{
 				if(strcmp(ST[i].name,s)==0 )
 				{
@@ -220,7 +225,8 @@
 	void insertSTparamscount(char *s, int count1)
 	{
 
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0 )
 			{
@@ -231,7 +237,8 @@
 
 	int getSTparamscount(char *s)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0 )
 			{
@@ -243,7 +250,8 @@
 
 	void insertSTF(char *s)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0 )
 			{
@@ -270,9 +278,9 @@
 				return;
 			}
 
-			int pos = 0;
+			int pos = 0,i;
 
-			for (int i = value + 1 ; i!=value ; i = (i+1)%1001)
+			for (i = value + 1 ; i!=value ; i = (i+1)%1001)
 			{
 				if(CT[i].length == 0)
 				{
@@ -289,7 +297,8 @@
 
 	void deletedata (int nesting)
 	{
-		for(int i = 0 ; i < 1001 ; i++)
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(ST[i].nestval == nesting)
 			{
@@ -302,8 +311,8 @@
 
 	int checkscope(char *s)
 	{
-		int flag = 0;
-		for(int i = 0 ; i < 1000 ; i++)
+		int i,flag = 0;
+		for(i = 0 ; i < 1000 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0)
 			{
@@ -330,7 +339,8 @@
 
 	int check_id_is_func(char *s)
 	{
-		for(int i = 0 ; i < 1000 ; i++)
+		int i;
+		for(i = 0 ; i < 1000 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0)
 			{
@@ -343,7 +353,8 @@
 
 	int checkarray(char *s)
 	{
-		for(int i = 0 ; i < 1000 ; i++)
+		int i;
+		for(i = 0 ; i < 1000 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0)
 			{
@@ -358,7 +369,8 @@
 
 	int duplicate(char *s)
 	{
-		for(int i = 0 ; i < 1000 ; i++)
+		int i;
+		for(i = 0 ; i < 1000 ; i++)
 		{
 			if(strcmp(ST[i].name,s)==0)
 			{				
@@ -374,7 +386,8 @@
 
 	int check_duplicate(char* str)
 	{
-		for(int i=0; i<1001; i++)
+		int i;
+		for(i=0; i<1001; i++)
 		{
 			if(strcmp(ST[i].name, str) == 0 && strcmp(ST[i].class, "Function") == 0)
 			{
@@ -386,7 +399,8 @@
 
 	int check_declaration(char* str, char *check_type)
 	{
-		for(int i=0; i<1001; i++)
+		int i;
+		for(i=0; i<1001; i++)
 		{
 			if(strcmp(ST[i].name, str) == 0 && strcmp(ST[i].class, "Function") == 0 || strcmp(ST[i].name,"printf")==0 )
 			{
@@ -408,7 +422,8 @@
 
 	char gettype(char *s, int flag)
 	{
-			for(int i = 0 ; i < 1001 ; i++ )
+			int i;
+			for(i = 0 ; i < 1001 ; i++ )
 			{
 				if(strcmp(ST[i].name,s)==0)
 				{
@@ -420,15 +435,16 @@
 
 	void printST()
 
-	{      for(int i=0;i<190;i++)
+	{      int i;
+		for(i=0;i<190;i++)
                {printf("-");}
                printf("\n");
 		printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Array Dimension");
-		for(int i=0;i<190;i++) {
+		for(i=0;i<190;i++) {
 			printf("-");
 		}
 		printf("\n");
-		for(int i = 0 ; i < 1001 ; i++)
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(ST[i].length == 0)
 			{
@@ -436,28 +452,30 @@
 			}
 			printf("%5d %20s %22s %20s %16s %22d %20d %22s\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,"NA");
 		}
-                for(int i=0;i<190;i++)
+                for(i=0;i<190;i++)
                 {printf("-");}
     }
 
 
 	void printCT()
-	{       for(int i=0;i<70;i++)
+	{       
+		int i;
+		for(i=0;i<70;i++)
                 {printf("-");}
                 printf("\n");
 		printf("%20s %20s %18s\n","Line Number","Constant Name","Data Type");
-		for(int i=0;i<70;i++) {
+		for(i=0;i<70;i++) {
 			printf("-");
 		}
 		printf("\n");
-		for(int i = 0 ; i < 1001 ; i++)
+		for(i = 0 ; i < 1001 ; i++)
 		{
 			if(CT[i].length == 0)
 				continue;
 
 			printf("%12d %22s %29s\n",CT[i].lineno,CT[i].name, CT[i].type);
 		}
-               for(int i=0;i<70;i++)
+               for(i=0;i<70;i++)
                {printf("-");}
                printf("\n");
 	}
