@@ -1108,7 +1108,7 @@ char *yytext;
 	{      for(int i=0;i<190;i++)
                {printf("-");}
                printf("\n");
-		printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s %-22s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Param List","Array Dimension");
+		printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Array Dimension");
 		for(int i=0;i<190;i++) {
 			printf("-");
 		}
@@ -1119,7 +1119,7 @@ char *yytext;
 			{
 				continue;
 			}
-			printf("%5d %20s %20s %22s %16s %22d %20d %20s %22s\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,"NA","NA");
+			printf("%5d %20s %22s %20s %16s %22d %20d %22s\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,"NA");
 		}
                 for(int i=0;i<190;i++)
                 {printf("-");}
