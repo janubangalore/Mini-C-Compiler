@@ -21,6 +21,7 @@
 	int check_id_is_func(char *);
 	void insertST(char*, char*);
 	void insertSTnest(char*, int);
+        void insertSTarraydimension(char*,char*); 
 	void insertSTparamscount(char*, int);
 	int getSTparamscount(char*);
 	int check_duplicate(char*);
@@ -57,6 +58,7 @@
 	int call_params_count=0;
 	int top = 0,count=0,ltop=0,lno=0;
 	char temp[3] = "t";
+        int array_dim;
 %}
 
 %nonassoc IF
@@ -132,8 +134,8 @@ identifier_array_type
 			| ;
 
 initilization_params
-			: integer_constant ']' initilization {if($$ < 1) {printf("Wrong array size\n"); exit(0);} }
-			| ']' string_initilization;
+			: integer_constant ']' initilization {if($$ < 1) {printf("Wrong array size\n");exit(0);} array_dim = $$; insertSTarraydimension(curid,array_dim);}
+			| ']' string_initilization{array_dim = -2; insertSTarraydimension(curid,array_dim);}
 
 initilization
 			: string_initilization
@@ -571,7 +573,7 @@ void label2()
 	char buffer[100];
 	itoa(lno,buffer,10);
 	strcat(temp,buffer);
-	printf("GoTo %s\n",temp);
+	printf("goto %s\n",temp);
 	strcpy(temp,"L");
 	itoa(label[ltop].labelvalue,buffer,10);
 	strcat(temp,buffer);
@@ -608,7 +610,7 @@ void label5()
 	char buffer[100];
 	itoa(label[ltop-1].labelvalue,buffer,10);
 	strcat(temp,buffer);
-	printf("GoTo %s:\n",temp);
+	printf("goto %s:\n",temp);
 	strcpy(temp,"L");
 	itoa(label[ltop].labelvalue,buffer,10);
 	strcat(temp,buffer);
@@ -620,12 +622,12 @@ void label5()
 
 void funcgen()
 {
-	printf("func begin %s\n",currfunc);
+	printf("Func BEGIN %s\n",currfunc);
 }
 
 void funcgenend()
 {
-	printf("func end\n\n");
+	printf("Func END\n\n");
 }
 
 void arggen(int i)
@@ -656,7 +658,7 @@ int main(int argc , char **argv)
 
 	if(flag == 0)
 	{
-		printf(ANSI_COLOR_GREEN "Status: Parsing Complete - Valid" ANSI_COLOR_RESET "\n");
+		printf(ANSI_COLOR_GREEN "STATUS: PARSING COMPLETE - VALID" ANSI_COLOR_RESET "\n");
 		int i;
                 for(i=0;i<190;i++)
                 printf("=");
@@ -677,7 +679,7 @@ void yyerror(char *s)
 {
 	printf(ANSI_COLOR_RED "%d %s %s\n", yylineno, s, yytext);
 	flag=1;
-	printf(ANSI_COLOR_RED "Status: Parsing Failed - Invalid\n" ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED "STATUS: PARSING FAILED - INVALID\n" ANSI_COLOR_RESET);
 	exit(7);
 }
 

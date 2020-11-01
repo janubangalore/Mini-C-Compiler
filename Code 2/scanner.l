@@ -22,6 +22,7 @@
 		int lineno;
 		int length;
 		int params_count;
+                int array_dimension;
 	}ST[1001];
 
 	struct constanttable
@@ -159,6 +160,7 @@
 			ST[pos].length = strlen(str1);
 			ST[pos].nestval = 9999;
 			ST[pos].params_count = -1;
+                
 		}
 	}
 
@@ -220,8 +222,18 @@
 				}
 			}
 		}
-	}
-
+	} 
+        void insertSTarraydimension(char *s,int array_dim)
+        {
+            int i;
+            for(i=0; i<1001 ; i++)
+            {
+              if(strcmp(ST[i].name,s)==0)
+              {
+                ST[i].array_dimension=array_dim;
+              }
+           }
+        }
 	void insertSTparamscount(char *s, int count1)
 	{
 
@@ -450,7 +462,11 @@
 			{
 				continue;
 			}
-			printf("%5d %20s %22s %20s %16s %22d %20d %22s\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,"NA");
+                        if(ST[i].array_dimension==0)
+                        {ST[i].array_dimension=-1;}
+                        if(ST[i].array_dimension==-2)
+                        {ST[i].array_dimension=0;}
+			printf("%5d %20s %22s %20s %16s %22d %20d %22d\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,ST[i].array_dimension);
 		}
                 for(i=0;i<190;i++)
                 {printf("-");}
