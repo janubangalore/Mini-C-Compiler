@@ -22,10 +22,11 @@ int main ( )
   char A[]="Hello";
 	int b=6;
   while(a>7)
-  {
+  { 
+    int x;
     b=6;
     while(b>=5)
-    {
+    { int y;
       a=9;
     }
   }
