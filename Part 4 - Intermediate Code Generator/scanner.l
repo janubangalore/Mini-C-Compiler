@@ -454,7 +454,7 @@ void printSTable()
  for(i=0;i<190;i++)
  { printf("-");}
  printf("\n");
- printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Array Dimension");
+ printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name","Class","Data Type","Value","Nesting","Num of params","Array Dimension");
 		
   for(i=0;i<190;i++) {
 	printf("-");}
