@@ -119,8 +119,8 @@ declaration
 			| function_declaration
 
 variable_declaration_identifier 
-			: identifier {if(duplicates(curid)){printf("Duplicate\n");exit(0);}insertSTnest(curid,currnest); inserting();  } vdi   
-			  | array_identifier {if(duplicates(curid)){printf("Duplicate\n");exit(0);}insertSTnest(curid,currnest); inserting();  } vdi;
+			: identifier {if(duplicates(curid)){printf("Duplicate\n");exit(0);}insertSTnest(curid,currnest); inserting();} vdi   
+			  | array_identifier {if(duplicates(curid)){printf("Duplicate\n");exit(0);}insertSTnest(curid,currnest); inserting();} vdi;
 
 variable_declaration_list
 			: variable_declaration_list ',' variable_declaration_identifier | variable_declaration_identifier;			
@@ -138,7 +138,8 @@ initilization
 			| ;
 
 initilization_params
-			: integer_constant ']' initilization {if($$ < 1) {printf("Wrong array size\n");exit(0);} array_dim = $$; insertSTarraydimension(curid,array_dim);}
+			: integer_constant ']' initilization {if($$ < 1) {printf("Wrong array size\n");exit(0);} array_dim = $$;
+			                                                 insertSTarraydimension(curid,array_dim);}
 			| ']' string_initilization{array_dim = -2; insertSTarraydimension(curid,array_dim);}
 
 
@@ -158,7 +159,8 @@ function_declaration
 			: function_declaration_type function_declaration_param_statement;
 
 function_declaration_type
-			: type_specifier identifier '('  { strcpy(currfunctype, curtype); strcpy(currfunc, curid); checkforduplicate(curid); insertSTFunction(curid); inserting(); };
+			: type_specifier identifier '('  { strcpy(currfunctype, curtype); strcpy(currfunc, curid); 
+			                                checkforduplicate(curid); insertSTFunction(curid); inserting(); };
 
 function_declaration_param_statement
 			: {params_count=0;}params ')' {functiongeneration();} statement {functiongenend();};
@@ -192,16 +194,20 @@ expression_statment
 			| ';' ;
 
 conditional_statements 
-			: IF '(' simple_expression ')' {label1();if($3!=1){printf("Condition checking is not of type int\n");exit(0);}} statement {label2();}  conditional_statements_breakup;
+			: IF '(' simple_expression ')' {label1();if($3!=1)
+			  {printf("Condition checking is not of type int\n");exit(0);}} statement {label2();}  conditional_statements_breakup;
 
 conditional_statements_breakup
 			: ELSE statement {label3();}
 			| {label3();};
 
 iterative_statements 
-			: WHILE '(' {label4();} simple_expression ')' {label1();if($4!=1){printf("Condition checking is not of type int\n");exit(0);}} statement {label5();} 
-			| FOR '(' expression ';' {label4();} simple_expression ';' {label1();if($6!=1){printf("Condition checking is not of type int\n");exit(0);}} expression ')'statement {label5();} 
-			| {label4();}DO statement WHILE '(' simple_expression ')'{label1();label5();if($6!=1){printf("Condition checking is not of type int\n");exit(0);}} ';';
+			: WHILE '(' {label4();} simple_expression ')' {label1();if($4!=1)
+			                             {printf("Condition checking is not of type int\n");exit(0);}} statement {label5();} 
+			| FOR '(' expression ';' {label4();} simple_expression ';' {label1();if($6!=1)
+			                             {printf("Condition checking is not of type int\n");exit(0);}} expression ')'statement {label5();} 
+			| {label4();}DO statement WHILE '(' simple_expression ')'{label1();label5();if($6!=1)
+			                             {printf("Condition checking is not of type int\n");exit(0);}} ';';
 return_statement 
 			: RETURN ';' {if(strcmp(currfunctype,"void")) {printf("Returning void of a non-void function\n"); exit(0);}}
 			| RETURN expression ';' { 	if(!strcmp(currfunctype, "void"))
@@ -242,51 +248,51 @@ param_identifier_breakup
 
 expression 
 			: mutable assignment_operator {push("=");} expression   {   
-																	  if($1==1 && $4==1) 
-																	  {
+					                                   if($1==1 && $4==1) 
+					                                          {
 			                                                          $$=1;
 			                                                          } 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);} 
 			                                                          codeassigning();
-			                                                       }
+			                                                        }
 			| mutable addition_assignment_operator {push("+=");}expression {  
-																	  if($1==1 && $4==1) 
+									    if($1==1 && $4==1) 
 			                                                          $$=1; 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);} 
 			                                                          codeassigning();
 			                                                       }
 			| mutable subtraction_assignment_operator {push("-=");} expression  {	  
-																	  if($1==1 && $4==1) 
+										if($1==1 && $4==1) 
 			                                                          $$=1; 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);} 
 			                                                          codeassigning();
 			                                                       }
 			| mutable multiplication_assignment_operator {push("*=");} expression {
-																	  if($1==1 && $4==1) 
+										if($1==1 && $4==1) 
 			                                                          $$=1; 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);}
 			                                                          codeassigning(); 
 			                                                       }
 			| mutable division_assignment_operator {push("/=");}expression 		{ 
-																	  if($1==1 && $4==1) 
+										if($1==1 && $4==1) 
 			                                                          $$=1; 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);} 
 			                                                       }
 			| mutable modulo_assignment_operator {push("%=");}expression 		{ 
-																	  if($1==1 && $3==1) 
+										if($1==1 && $3==1) 
 			                                                          $$=1; 
 			                                                          else 
 			                                                          {$$=-1; printf("Type mismatch\n"); exit(0);} 
 			                                                          codeassigning();
-																	}
-			| mutable increment_operator 							{ push("++");if($1 == 1) $$=1; else $$=-1; generatingunary();}
-			| mutable decrement_operator  							{push("--");if($1 == 1) $$=1; else $$=-1;}
-			| simple_expression {if($1 == 1) $$=1; else $$=-1;} ;
+										}
+			| mutable increment_operator 				{ push("++");if($1 == 1) $$=1; else $$=-1; generatingunary();}
+			| mutable decrement_operator  				{ push("--");if($1 == 1) $$=1; else $$=-1; }
+			| simple_expression                                     { if($1 == 1) $$=1; else $$=-1; } ;
 
 
 simple_expression 
@@ -320,7 +326,12 @@ array_int_declarations_breakup
 			| ;
 
 relational_operators 
-			: greaterthan_assignment_operator {push(">=");} | lessthan_assignment_operator {push("<=");} | greaterthan_operator {push(">");}| lessthan_operator {push("<");}| equality_operator {push("==");}| inequality_operator {push("!=");} ;
+			: greaterthan_assignment_operator {push(">=");} 
+			| lessthan_assignment_operator {push("<=");} 
+			| greaterthan_operator {push(">");}
+			| lessthan_operator {push("<");}
+			| equality_operator {push("==");}
+			| inequality_operator {push("!=");} ;
 
 term
 			: term MULOP factor {if($1 == 1 && $3==1) $$=1; else $$=-1; codegeneration();}
@@ -337,9 +348,9 @@ sum_operators
 
 mutable 
 			: identifier {
-						  push(curid);
-						  if(check_id_is_function(curid))
-						  {printf("Function name used as Identifier\n"); exit(8);}
+				      push(curid);
+				      if(check_id_is_function(curid))
+				      {printf("Function name used as Identifier\n"); exit(8);}
 			              if(!check_scope(curid))
 			              {printf("%s\n",curid);printf("Undeclared\n");exit(0);} 
 			              if(!check_array(curid))
@@ -404,13 +415,17 @@ call
 							callgeneration();
 						 };
 
-exp : identifier {arggeneration(1);} | integer_constant {arggeneration(2);} | string_constant {arggeneration(3);} | float_constant {arggeneration(4);} | character_constant {arggeneration(5);} ;
+exp : identifier          {arggeneration(1);} 
+     | integer_constant   {arggeneration(2);} 
+     | string_constant    {arggeneration(3);} 
+     | float_constant     {arggeneration(4);} 
+     | character_constant {arggeneration(5);} ;
 
 constant 
 			: integer_constant 	{  insValue(); codegeneratingcon(); $$=1; } 
 			| string_constant	{  insValue(); codegeneratingcon();$$=-1;} 
 			| float_constant	{  insValue(); codegeneratingcon();} 
-			| character_constant{  insValue(); codegeneratingcon();$$=1; };
+			| character_constant    {  insValue(); codegeneratingcon();$$=1; };
 
 %%
 
