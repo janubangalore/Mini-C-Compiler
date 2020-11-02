@@ -49,7 +49,27 @@
 		return value;
 	}
 
-	int lookupST(char *str)
+	int lookingupCT(char *str)
+	{
+		int value = hash(str),i;
+		if(CT[value].length == 0)
+                        return 0;
+		else if(strcmp(CT[value].name,str)==0)
+			return 1;
+		else
+		{
+			for(i = value + 1 ; i!=value ; i = (i+1)%1001)
+			{
+				if(strcmp(CT[i].name,str)==0)
+				{
+					return 1;
+				}
+			}
+			return 0;
+		}
+	}
+
+	int lookingupST(char *str)
 	{
 		int value = hash(str), i;
 		if(ST[value].length == 0)
@@ -75,37 +95,6 @@
 		}
 	}
 
-	int lookupCT(char *str)
-	{
-		int value = hash(str),i;
-		if(CT[value].length == 0)
-                        return 0;
-		else if(strcmp(CT[value].name,str)==0)
-			return 1;
-		else
-		{
-			for(i = value + 1 ; i!=value ; i = (i+1)%1001)
-			{
-				if(strcmp(CT[i].name,str)==0)
-				{
-					return 1;
-				}
-			}
-			return 0;
-		}
-	}
-        void insertCTline(char *str1 ,int line)
-        {
-	 int i;
-         for(i=0; i<1001 ;i++)
-          {
-             if(strcmp(CT[i].name,str1)==0)
-               {
-                CT[i].lineno = line;
-               }  
-        
-           }
-        }
 	void insertSTline(char *str1, int line)
 	{
 		int i;
@@ -118,12 +107,25 @@
 		}
 	}
 
+    void insertCTline(char *str1 ,int line)
+        {
+	 int i;
+         for(i=0; i<1001 ;i++)
+          {
+             if(strcmp(CT[i].name,str1)==0)
+               {
+                CT[i].lineno = line;
+               }  
+        
+           }
+        }
 
-	void insertST(char *str1, char *str2)
+
+	void insertSTable(char *str1, char *str2)
 	{
-		if(lookupST(str1))
+		if(lookingupST(str1))
 		{
-			if(strcmp(ST[lookupST(str1)].class,"Identifier")==0 && strcmp(str2,"Array Identifier")==0)
+			if(strcmp(ST[lookingupST(str1)].class,"Identifier")==0 && strcmp(str2,"Array Identifier")==0)
 			{
 				printf("Error use of array\n");
 				exit(0);
@@ -192,7 +194,7 @@
 	void insertSTnest(char *s, int nest)
 	{
 		int i;
-		if(lookupST(s) && ST[lookupST(s)].nestval != 9999)
+		if(lookingupST(s) && ST[lookingupST(s)].nestval != 9999)
 		{
              int pos = 0;
              int value = hash(s);
@@ -223,7 +225,9 @@
 			}
 		}
 	} 
-        void insertSTarraydimension(char *s,int array_dim)
+    
+
+    void insertSTarraydimension(char *s,int array_dim)
         {
             int i;
             for(i=0; i<1001 ; i++)
@@ -260,7 +264,7 @@
 		return -1;
 	}
 
-	void insertSTF(char *s)
+	void insertSTFunction(char *s)
 	{
 		int i;
 		for(i = 0 ; i < 1001 ; i++)
@@ -274,9 +278,21 @@
 
 	}
 
-	void insertCT(char *str1, char *str2)
+	void delete_data(int nesting)
 	{
-		if(lookupCT(str1))
+		int i;
+		for(i = 0 ; i < 1001 ; i++)
+		{
+			if(ST[i].nestval == nesting)
+			{
+				ST[i].nestval = 99999;
+			}
+		}
+	}
+
+	void insertCTable(char *str1, char *str2)
+	{
+		if(lookingupCT(str1))
 			return;
 		else
 		{
@@ -307,21 +323,21 @@
 		}
 	}
 
-	void deletedata (int nesting)
+	int check_id_is_function(char *s)
 	{
 		int i;
-		for(i = 0 ; i < 1001 ; i++)
+		for(i = 0 ; i < 1000 ; i++)
 		{
-			if(ST[i].nestval == nesting)
+			if(strcmp(ST[i].name,s)==0)
 			{
-				ST[i].nestval = 99999;
+				if(strcmp(ST[i].class,"Function")==0)
+					return 1;
 			}
 		}
-
-
+		return 0;
 	}
 
-	int checkscope(char *s)
+	int check_scope(char *s)
 	{
 		int i,flag = 0;
 		for(i = 0 ; i < 1000 ; i++)
@@ -349,21 +365,8 @@
 		}
 	}
 
-	int check_id_is_func(char *s)
-	{
-		int i;
-		for(i = 0 ; i < 1000 ; i++)
-		{
-			if(strcmp(ST[i].name,s)==0)
-			{
-				if(strcmp(ST[i].class,"Function")==0)
-					return 1;
-			}
-		}
-		return 0;
-	}
 
-	int checkarray(char *s)
+	int check_array(char *s)
 	{
 		int i;
 		for(i = 0 ; i < 1000 ; i++)
@@ -379,7 +382,7 @@
 		return 1;
 	}
 
-	int duplicate(char *s)
+	int duplicates(char *s)
 	{
 		int i;
 		for(i = 0 ; i < 1000 ; i++)
@@ -396,7 +399,7 @@
 		return 0;
 	}
 
-	int check_duplicate(char* str)
+	int checkforduplicate(char* str)
 	{
 		int i;
 		for(i=0; i<1001; i++)
@@ -409,7 +412,17 @@
 		}
 	}
 
-	int check_declaration(char* str, char *check_type)
+	int checkparameters(char* type_specifier)
+	{
+		if(!strcmp(type_specifier, "void"))
+		{
+			printf("Parameters cannot be of type void\n");
+			exit(0);
+		}
+		return 0;
+	}
+
+	int checkfordeclaration(char* str, char *check_type)
 	{
 		int i;
 		for(i=0; i<1001; i++)
@@ -422,17 +435,7 @@
 		return 0;
 	}
 
-	int check_params(char* type_specifier)
-	{
-		if(!strcmp(type_specifier, "void"))
-		{
-			printf("Parameters cannot be of type void\n");
-			exit(0);
-		}
-		return 0;
-	}
-
-	char gettype(char *s, int flag)
+	char get_type(char *s, int flag)
 	{
 			int i;
 			for(i = 0 ; i < 1001 ; i++ )
@@ -445,8 +448,7 @@
 		
 	}
 
-	void printST()
-
+	void printSTable()
 	{      int i;
 		for(i=0;i<190;i++)
                {printf("-");}
@@ -473,7 +475,7 @@
     }
 
 
-	void printCT()
+	void printCTable()
 	{       
 		int i;
 		for(i=0;i<70;i++)
@@ -522,24 +524,24 @@ IN "include"
 ":"				{ return(':'); }
 "."				{ return('.'); }
 
-"char"			{ strcpy(curtype,yytext); insertST(yytext, "Keyword");return CHAR;}
-"double"		{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return DOUBLE;}
-"else"			{ insertST(yytext, "Keyword"); return ELSE;}
-"float"			{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return FLOAT;}
-"while"			{ insertST(yytext, "Keyword"); return WHILE;}
-"do"			{ insertST(yytext, "Keyword"); return DO;}
-"for"			{ insertST(yytext, "Keyword"); return FOR;}
-"if"			{ insertST(yytext, "Keyword"); return IF;}
-"int"			{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return INT;}
-"long"			{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return LONG;}
-"return"		{ insertST(yytext, "Keyword"); return RETURN;}
-"short"			{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return SHORT;}
-"signed"		{ strcpy(curtype,yytext); insertST(yytext, "Keyword"); return SIGNED;}
-"sizeof" 		{ insertST(yytext, "Keyword"); return SIZEOF;}
-"struct"		{ strcpy(curtype,yytext);   insertST(yytext, "Keyword");  return STRUCT;}
-"unsigned"		{ insertST(yytext, "Keyword");   return UNSIGNED;}
-"void"			{ strcpy(curtype,yytext);   insertST(yytext, "Keyword");  return VOID;}
-"break"			{ insertST(yytext, "Keyword");  return BREAK;}
+"char"			{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword");return CHAR;}
+"double"		{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return DOUBLE;}
+"else"			{ insertSTable(yytext, "Keyword"); return ELSE;}
+"float"			{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return FLOAT;}
+"while"			{ insertSTable(yytext, "Keyword"); return WHILE;}
+"do"			{ insertSTable(yytext, "Keyword"); return DO;}
+"for"			{ insertSTable(yytext, "Keyword"); return FOR;}
+"if"			{ insertSTable(yytext, "Keyword"); return IF;}
+"int"			{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return INT;}
+"long"			{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return LONG;}
+"return"		{ insertSTable(yytext, "Keyword"); return RETURN;}
+"short"			{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return SHORT;}
+"signed"		{ strcpy(curtype,yytext); insertSTable(yytext, "Keyword"); return SIGNED;}
+"sizeof" 		{ insertSTable(yytext, "Keyword"); return SIZEOF;}
+"struct"		{ strcpy(curtype,yytext);   insertSTable(yytext, "Keyword");  return STRUCT;}
+"unsigned"		{ insertSTable(yytext, "Keyword");   return UNSIGNED;}
+"void"			{ strcpy(curtype,yytext);   insertSTable(yytext, "Keyword");  return VOID;}
+"break"			{ insertSTable(yytext, "Keyword");  return BREAK;}
 
 
 
@@ -577,12 +579,12 @@ IN "include"
 "|"				{ return pipe_operator; }
 \=				{ return assignment_operator;}
 
-\"[^\n]*\"/[;|,|\)] 			{strcpy(curval,yytext); insertCT(yytext,"String Constant"); return string_constant;}
-\'[A-Z|a-z]\'/[;|,|\)|:] 		{strcpy(curval,yytext); insertCT(yytext,"Character Constant"); return character_constant;}
-[a-z|A-Z]([a-z|A-Z]|[0-9])*/\[ 	{strcpy(curid,yytext); insertST(yytext, "Array Identifier");  return array_identifier;}
-[1-9][0-9]*|0/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\]|\}|:|\n|\t|\^] 	{strcpy(curval,yytext); insertCT(yytext, "Number Constant"); yylval = atoi(yytext); return integer_constant;}
-([0-9]*)\.([0-9]+)/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\n|\t|\^] 	{strcpy(curval,yytext); insertCT(yytext, "Floating Constant"); return float_constant;}
-[A-Za-z_][A-Za-z_0-9]* {strcpy(curid,yytext); insertST(curid,"Identifier"); return identifier;}
+\"[^\n]*\"/[;|,|\)] 			{strcpy(curval,yytext); insertCTable(yytext,"String Constant"); return string_constant;}
+\'[A-Z|a-z]\'/[;|,|\)|:] 		{strcpy(curval,yytext); insertCTable(yytext,"Character Constant"); return character_constant;}
+[a-z|A-Z]([a-z|A-Z]|[0-9])*/\[ 	{strcpy(curid,yytext); insertSTable(yytext, "Array Identifier");  return array_identifier;}
+[1-9][0-9]*|0/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\]|\}|:|\n|\t|\^] 	{strcpy(curval,yytext); insertCTable(yytext, "Number Constant"); yylval = atoi(yytext); return integer_constant;}
+([0-9]*)\.([0-9]+)/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\n|\t|\^] 	{strcpy(curval,yytext); insertCTable(yytext, "Floating Constant"); return float_constant;}
+[A-Za-z_][A-Za-z_0-9]* {strcpy(curid,yytext); insertSTable(curid,"Identifier"); return identifier;}
 
 (.?) {
 		if(yytext[0]=='#')

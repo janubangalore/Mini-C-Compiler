@@ -71,35 +71,35 @@ extern int yydebug;
     float_constant = 281,
     character_constant = 282,
     ELSE = 283,
-    leftshift_assignment_operator = 284,
-    rightshift_assignment_operator = 285,
-    XOR_assignment_operator = 286,
-    OR_assignment_operator = 287,
-    AND_assignment_operator = 288,
-    modulo_assignment_operator = 289,
-    multiplication_assignment_operator = 290,
-    division_assignment_operator = 291,
-    addition_assignment_operator = 292,
-    subtraction_assignment_operator = 293,
-    assignment_operator = 294,
-    OR_operator = 295,
-    AND_operator = 296,
-    pipe_operator = 297,
-    caret_operator = 298,
-    amp_operator = 299,
-    equality_operator = 300,
-    inequality_operator = 301,
-    lessthan_assignment_operator = 302,
-    lessthan_operator = 303,
-    greaterthan_assignment_operator = 304,
-    greaterthan_operator = 305,
-    leftshift_operator = 306,
-    rightshift_operator = 307,
-    add_operator = 308,
-    subtract_operator = 309,
-    multiplication_operator = 310,
-    division_operator = 311,
-    modulo_operator = 312,
+    OR_operator = 284,
+    AND_operator = 285,
+    pipe_operator = 286,
+    caret_operator = 287,
+    amp_operator = 288,
+    equality_operator = 289,
+    inequality_operator = 290,
+    lessthan_assignment_operator = 291,
+    lessthan_operator = 292,
+    greaterthan_assignment_operator = 293,
+    greaterthan_operator = 294,
+    leftshift_operator = 295,
+    rightshift_operator = 296,
+    add_operator = 297,
+    subtract_operator = 298,
+    multiplication_operator = 299,
+    division_operator = 300,
+    modulo_operator = 301,
+    leftshift_assignment_operator = 302,
+    rightshift_assignment_operator = 303,
+    XOR_assignment_operator = 304,
+    OR_assignment_operator = 305,
+    AND_assignment_operator = 306,
+    modulo_assignment_operator = 307,
+    multiplication_assignment_operator = 308,
+    division_assignment_operator = 309,
+    addition_assignment_operator = 310,
+    subtraction_assignment_operator = 311,
+    assignment_operator = 312,
     SIZEOF = 313,
     tilde_operator = 314,
     exclamation_operator = 315,
@@ -134,35 +134,35 @@ extern int yydebug;
 #define float_constant 281
 #define character_constant 282
 #define ELSE 283
-#define leftshift_assignment_operator 284
-#define rightshift_assignment_operator 285
-#define XOR_assignment_operator 286
-#define OR_assignment_operator 287
-#define AND_assignment_operator 288
-#define modulo_assignment_operator 289
-#define multiplication_assignment_operator 290
-#define division_assignment_operator 291
-#define addition_assignment_operator 292
-#define subtraction_assignment_operator 293
-#define assignment_operator 294
-#define OR_operator 295
-#define AND_operator 296
-#define pipe_operator 297
-#define caret_operator 298
-#define amp_operator 299
-#define equality_operator 300
-#define inequality_operator 301
-#define lessthan_assignment_operator 302
-#define lessthan_operator 303
-#define greaterthan_assignment_operator 304
-#define greaterthan_operator 305
-#define leftshift_operator 306
-#define rightshift_operator 307
-#define add_operator 308
-#define subtract_operator 309
-#define multiplication_operator 310
-#define division_operator 311
-#define modulo_operator 312
+#define OR_operator 284
+#define AND_operator 285
+#define pipe_operator 286
+#define caret_operator 287
+#define amp_operator 288
+#define equality_operator 289
+#define inequality_operator 290
+#define lessthan_assignment_operator 291
+#define lessthan_operator 292
+#define greaterthan_assignment_operator 293
+#define greaterthan_operator 294
+#define leftshift_operator 295
+#define rightshift_operator 296
+#define add_operator 297
+#define subtract_operator 298
+#define multiplication_operator 299
+#define division_operator 300
+#define modulo_operator 301
+#define leftshift_assignment_operator 302
+#define rightshift_assignment_operator 303
+#define XOR_assignment_operator 304
+#define OR_assignment_operator 305
+#define AND_assignment_operator 306
+#define modulo_assignment_operator 307
+#define multiplication_assignment_operator 308
+#define division_assignment_operator 309
+#define addition_assignment_operator 310
+#define subtraction_assignment_operator 311
+#define assignment_operator 312
 #define SIZEOF 313
 #define tilde_operator 314
 #define exclamation_operator 315
