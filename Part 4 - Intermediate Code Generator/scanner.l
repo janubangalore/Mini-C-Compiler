@@ -448,30 +448,31 @@
 		
 	}
 
-	void printSTable()
-	{      int i;
-		for(i=0;i<190;i++)
-               {printf("-");}
-               printf("\n");
-		printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Array Dimension");
-		for(i=0;i<190;i++) {
-			printf("-");
-		}
-		printf("\n");
-		for(i = 0 ; i < 1001 ; i++)
-		{
-			if(ST[i].length == 0)
-			{
-				continue;
-			}
-                        if(ST[i].array_dimension==0)
-                        {ST[i].array_dimension=-1;}
-                        if(ST[i].array_dimension==-2)
-                        {ST[i].array_dimension=0;}
-			printf("%5d %20s %22s %20s %16s %22d %20d %22d\n",ST[i].lineno,ST[i].name, ST[i].class, ST[i].type, ST[i].value,ST[i].nestval, ST[i].params_count,ST[i].array_dimension);
-		}
-                for(i=0;i<190;i++)
-                {printf("-");}
+void printSTable()
+{ 
+ int i;
+ for(i=0;i<190;i++)
+ { printf("-");}
+ printf("\n");
+ printf("%-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Nesting", "Num of params","Array Dimension");
+		
+  for(i=0;i<190;i++) {
+	printf("-");}
+	printf("\n");
+		
+  for(i = 0 ; i < 1001 ; i++) {
+	if(ST[i].length == 0)
+	  {
+	    continue;
+	   }
+        if(ST[i].array_dimension==0)
+          {ST[i].array_dimension=-1;}
+        if(ST[i].array_dimension==-2)
+          {ST[i].array_dimension=0;}
+printf("%5d %20s %22s %20s %16s %22d %20d %22d\n",ST[i].lineno,ST[i].name,ST[i].class,ST[i].type,ST[i].value,ST[i].nestval,ST[i].params_count,ST[i].array_dimension);
+	}
+      for(i=0;i<190;i++)
+         {printf("-");}
     }
 
 
@@ -509,9 +510,9 @@ IN "include"
 %%
 \n 	{yylineno++;}
 ([#][" "]*({IN})[ ]*([<]?)([A-Za-z]+)[.]?([A-Za-z]*)([>]?))/["\n"|\/|" "|"\t"]	{ }
-([#][" "]*({DE})[" "]*([A-Za-z]+)(" ")*[0-9]+)/["\n"|\/|" "|"\t"]				{ } 
-\/\/(.*)																		{ }
-\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/										{ }
+([#][" "]*({DE})[" "]*([A-Za-z]+)(" ")*[0-9]+)/["\n"|\/|" "|"\t"]		{ } 
+\/\/(.*)									{ }
+\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/					{ }
 [ \n\t] ;
 ";"				{ return(';'); }
 ","				{ return(','); }
@@ -582,8 +583,10 @@ IN "include"
 \"[^\n]*\"/[;|,|\)] 			{strcpy(curval,yytext); insertCTable(yytext,"String Constant"); return string_constant;}
 \'[A-Z|a-z]\'/[;|,|\)|:] 		{strcpy(curval,yytext); insertCTable(yytext,"Character Constant"); return character_constant;}
 [a-z|A-Z]([a-z|A-Z]|[0-9])*/\[ 	{strcpy(curid,yytext); insertSTable(yytext, "Array Identifier");  return array_identifier;}
-[1-9][0-9]*|0/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\]|\}|:|\n|\t|\^] 	{strcpy(curval,yytext); insertCTable(yytext, "Number Constant"); yylval = atoi(yytext); return integer_constant;}
-([0-9]*)\.([0-9]+)/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\n|\t|\^] 	{strcpy(curval,yytext); insertCTable(yytext, "Floating Constant"); return float_constant;}
+[1-9][0-9]*|0/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\]|\}|:|\n|\t|\^]  {strcpy(curval,yytext); insertCTable(yytext, "Number Constant"); 
+                                                                             yylval = atoi(yytext); return integer_constant;}
+([0-9]*)\.([0-9]+)/[;|,|" "|\)|<|>|=|\!|\||&|\+|\-|\*|\/|\%|~|\n|\t|\^] 	{strcpy(curval,yytext); insertCTable(yytext, "Floating Constant"); 
+                                                                                  return float_constant;}
 [A-Za-z_][A-Za-z_0-9]* {strcpy(curid,yytext); insertSTable(curid,"Identifier"); return identifier;}
 
 (.?) {
