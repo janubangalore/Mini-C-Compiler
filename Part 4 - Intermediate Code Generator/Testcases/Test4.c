@@ -1,4 +1,4 @@
-// Undeclared variable assigned
+// Undeclared variable assignment
 
 #include <stdio.h>
 
