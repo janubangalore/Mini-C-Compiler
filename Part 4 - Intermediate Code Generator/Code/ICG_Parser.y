@@ -296,6 +296,8 @@ expression
 																	}
 			| mutable increment_operator 							{ push("++");if($1 == 1) $$=1; else $$=-1; genunary();}
 			| mutable decrement_operator  							{push("--");if($1 == 1) $$=1; else $$=-1;}
+			| increment_operator mutable							{ push("++");if($1 == 1) $$=1; else $$=-1; genunary();}
+			| decrement_operator mutable							{push("--");if($1 == 1) $$=1; else $$=-1;}
 			| simple_expression {if($1 == 1) $$=1; else $$=-1;} ;
 
 

@@ -650,7 +650,7 @@ multicomment()
 		else if(star == '/'){
 			comment_end = input();
 			if(comment_end == EOF){
-				printf("Reached EOF, but multiline comment isn't ended!");
+				yyerror("Reached EOF, but multiline comment isn't ended!");
 				break;
 			}
 			else if(comment_end == '*'){
@@ -665,11 +665,10 @@ multicomment()
 		else if(star == '*'){
 			comment_end = input();
 			if(comment_end == EOF){
-				printf("Reached EOF, but multiline comment isn't ended!");
+				yyerror("Reached EOF, but multiline comment isn't ended!");
 				break;
 			}
 			else if(comment_end == '/'){
-				printf("\nLine %d : Detected multiline line comment with nesting level = %d\n", yylineno, count);
 				count--;
 				if(count>0)	star = input();
 			}
@@ -682,7 +681,7 @@ multicomment()
 		}
 	}
 	if(star == EOF){
-		printf("Reached EOF, but multiline comment isn't ended!");
+		yyerror("Reached EOF, but multiline comment isn't ended!");
 	}
 }
 
@@ -692,7 +691,6 @@ singlecomment()
 	while(comment_end != EOF && comment_end != '\n'){
 		comment_end = input();
 	}
-	printf("\nLine %d : Detected single line comment\n", yylineno);
 	if(comment_end == '\n'){
 		yylineno++;
 	}
