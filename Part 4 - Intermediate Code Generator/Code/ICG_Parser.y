@@ -277,7 +277,7 @@ iterative_statements
 			';' ;
 return_statement 
 			: RETURN ';' {
-				if(strcmp(currfunctype,"void"))	yerror("Returning void of a non-void function\n");
+				if(strcmp(currfunctype,"void"))	yyerror("Returning void of a non-void function\n");
 				}
 			| RETURN expression ';' { 	
 				if(!strcmp(currfunctype, "void")){ 
