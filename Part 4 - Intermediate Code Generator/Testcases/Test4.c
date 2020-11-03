@@ -1,4 +1,4 @@
-// Undeclared variable assignment
+// Function return type mismatch
 
 #include <stdio.h>
 

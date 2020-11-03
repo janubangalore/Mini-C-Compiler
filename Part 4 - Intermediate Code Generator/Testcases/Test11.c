@@ -1,4 +1,4 @@
-// Function return type mismatch
+// Function returning value for void
 #include<stdio.h>
 
 void square(int num)
