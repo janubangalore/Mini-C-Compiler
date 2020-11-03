@@ -1,12 +1,22 @@
+// Strings and various types of comments
 #include <stdio.h>
 
-void main()
-{
-	int i,n;
+int b=10;
 
-	
-		do
-		{
-			printf("hi");
-		}while(i<n);
+int main()
+{
+	int k=5;
+	long int z;
+	while(1){
+		// Beginning of first infinite loop
+		int k;
+		while(1){
+			/* Beginning of
+			last 
+			infinite loop
+			*/
+			printf("Hello World!");
+		}
+	}
+	return 0;
 }
