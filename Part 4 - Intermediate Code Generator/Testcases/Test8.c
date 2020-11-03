@@ -1,4 +1,4 @@
-// Function call before declarartion
+// Function call before declaration
 #include<stdio.h>
 
 void main()

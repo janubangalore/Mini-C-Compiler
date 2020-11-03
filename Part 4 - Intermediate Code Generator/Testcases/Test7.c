@@ -1,4 +1,4 @@
-// Invalid identifer name
+// Invalid identifier name
 #include <stdio.h>
 
 int main()
