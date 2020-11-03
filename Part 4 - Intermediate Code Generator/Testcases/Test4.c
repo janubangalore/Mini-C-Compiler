@@ -1,13 +1,11 @@
 // Undeclared variable assigned
+
 #include <stdio.h>
 
 int main()
 {
 	int a =4;
-	{
-		int c=10;
-	}
-	c=8;
+	char c = 'j';
 	a=9;
-	return 0;
+	return 8.0;
 }

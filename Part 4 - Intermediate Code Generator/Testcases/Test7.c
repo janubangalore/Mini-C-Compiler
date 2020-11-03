@@ -1,9 +1,9 @@
-// Working code
+// Invalid identifer name
 #include <stdio.h>
 
 int main()
 {
 	int a;
-  int b =4.2;
+  	int !name;
 	return 0;
 }

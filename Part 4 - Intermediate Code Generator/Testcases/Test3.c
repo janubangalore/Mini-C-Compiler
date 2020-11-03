@@ -1,4 +1,5 @@
-//Initialisation without declaration
+// Initialisation without declaration
+
 #include <stdio.h>
 
 int main()
