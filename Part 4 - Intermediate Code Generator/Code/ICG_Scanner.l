@@ -459,10 +459,10 @@
 	void showSymbolTable()
 	{
 		int i;
-		for(i=0;i<190;i++)    { printf("-"); }
+		for(i=0;i<160;i++)    { printf("-"); }
 		printf("\n");
 		printf("%-20s %-20s %-20s %-20s %-15s %-20s %-20s %-20s \n","Line Number","Token name", "Class", "Data Type","Value", "Scope Level", "Num of params","Array Dimension");
-		for(i=0;i<190;i++) {
+		for(i=0;i<160;i++) {
 			printf("-");
 		}
 		printf("\n");
@@ -489,7 +489,7 @@
 			}
 			printf("\n");
 		}
-                for(i=0;i<190;i++)
+                for(i=0;i<160;i++)
                 {printf("-");}
 	}
 
@@ -497,11 +497,11 @@
 	void showConstantTable()
 	{       
 		int i;
-		for(i=0;i<70;i++)
+		for(i=0;i<75;i++)
                 {printf("-");}
                 printf("\n");
 		printf("%20s %20s %18s\n","Line Number","Constant Name","Data Type");
-		for(i=0;i<70;i++) {
+		for(i=0;i<75;i++) {
 			printf("-");
 		}
 		printf("\n");
@@ -512,7 +512,7 @@
 
 			printf("%12d %22s %29s\n",CT[i].lineno,CT[i].name, CT[i].type);
 		}
-               for(i=0;i<70;i++)
+               for(i=0;i<75;i++)
                {printf("-");}
                printf("\n");
 	}

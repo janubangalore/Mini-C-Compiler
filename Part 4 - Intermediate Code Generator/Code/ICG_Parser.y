@@ -106,7 +106,7 @@ program
 			: declaration_list;
 
 declaration_list
-			: declaration D 
+			: declaration D ;
 
 D
 			: declaration_list
@@ -115,17 +115,31 @@ D
 declaration
 			: variable_declaration 
 			| function_declaration
+			;
 
 variable_declaration
 			: type_specifier variable_declaration_list ';' 
+			;
 
 variable_declaration_list
-			: variable_declaration_list ',' variable_declaration_identifier | variable_declaration_identifier;
+			: variable_declaration_list ',' variable_declaration_identifier 
+			| variable_declaration_identifier
+			;
 
 variable_declaration_identifier 
-			: identifier {if(duplicate(curid)){yyerror("Duplicate\n");exit(0);}insertSymbolTableNesting(curid,currnest); insertScope(curid,currnest);ins();  } vdi   
-			  | array_identifier {if(duplicate(curid)){yyerror("Duplicate\n");exit(0);}insertSymbolTableNesting(curid,currnest); insertScope(curid,currnest);ins();  } vdi;
+			: identifier { if(duplicate(curid)){	yyerror("Duplicate\n");	}
+					insertSymbolTableNesting(curid,currnest);
+					insertScope(curid,currnest);
+					ins();
+				     }
 			
+			vdi   
+			| array_identifier { if(duplicate(curid))	yyerror("Duplicate\n");
+						insertSymbolTableNesting(curid,currnest);
+						insertScope(curid,currnest);ins(); 
+					}
+			vdi
+			;			
 			
 
 vdi : identifier_array_type | assignment_operator simple_expression  ; 
@@ -135,8 +149,13 @@ identifier_array_type
 			| ;
 
 initilization_params
-			: integer_constant ']' initilization {if($$ < 1) {yyerror("Wrong array size\n");exit(0);} array_dim = $$; insertSymbolTableArrayDimension(curid,array_dim);}
-			| ']' string_initilization{array_dim = -2; insertSymbolTableArrayDimension(curid,array_dim);}
+			: integer_constant ']' initilization {	if($$ < 1) yyerror("Wrong array size\n");
+								array_dim = $$;
+								insertSymbolTableArrayDimension(curid,array_dim);
+								}
+			| ']' string_initilization	{	array_dim = -2; 
+								insertSymbolTableArrayDimension(curid,array_dim);}
+			;
 
 initilization
 			: string_initilization
@@ -164,29 +183,45 @@ short_grammar
 			: INT | ;
 
 function_declaration
-			: function_declaration_type function_declaration_param_statement;
+			: function_declaration_type function_declaration_param_statement ;
 
 function_declaration_type
-			: type_specifier identifier '('  { strcpy(currfunctype, curtype); strcpy(currfunc, curid); check_duplicate(curid); insertSymbolTableFunc(curid); ins(); };
+			: type_specifier identifier '('  { strcpy(currfunctype, curtype);
+							strcpy(currfunc, curid);
+							check_duplicate(curid); 
+							insertSymbolTableFunc(curid);
+							ins(); } 
+			;
 
 function_declaration_param_statement
-			: {params_count=0;}params ')' {funcgen();} statement {funcgenend();};
+			: {	params_count=0;}params ')' {funcgen();} statement { funcgenend(); }
+			;
 
 params 
-			: parameters_list { insertSymbolTableParamsCount(currfunc, params_count); }| { insertSymbolTableParamsCount(currfunc, params_count); };
+			: parameters_list { 
+				insertSymbolTableParamsCount(currfunc, params_count); }
+			| { insertSymbolTableParamsCount(currfunc, params_count); }
+			;
 
 parameters_list 
-			: type_specifier { check_params(curtype);} parameters_identifier_list ;
+			: type_specifier { check_params(curtype);} parameters_identifier_list 
+			;
 
 parameters_identifier_list 
-			: param_identifier parameters_identifier_list_breakup;
+			: param_identifier parameters_identifier_list_breakup
+			;
 
 parameters_identifier_list_breakup
 			: ',' parameters_list 
 			| ;
 
 param_identifier 
-			: identifier { ins();insertScope(curid,1);insertSymbolTableNesting(curid,1); params_count++; } param_identifier_breakup;
+			: identifier { ins();
+					insertScope(curid,1);
+					insertSymbolTableNesting(curid,1);
+					params_count++; }
+			param_identifier_breakup
+			;
 
 param_identifier_breakup
 			: '[' ']'
@@ -196,10 +231,12 @@ statement
 			: expression_statment | compound_statement 
 			| conditional_statements | iterative_statements 
 			| return_statement | break_statement 
-			| variable_declaration;
+			| variable_declaration
+			;
 
 compound_statement 
-			: {currnest++;} '{'  statment_list  '}' { deletedata(currnest);	currnest--;}  ;
+			: {currnest++;} '{'  statment_list  '}' { deletedata(currnest);	currnest--;} 
+			;
 
 statment_list 
 			: statement statment_list 
@@ -210,29 +247,47 @@ expression_statment
 			| ';' ;
 
 conditional_statements 
-			: IF '(' simple_expression ')' {label1();if($3!=1){yyerror("Condition checking is not of type int\n");exit(0);}} statement {label2();}  conditional_statements_breakup;
+			: IF '(' simple_expression ')' {
+				label1();
+				if($3!=1)	yyerror("Condition checking is not of type int\n");	}
+			statement {	label2();	}  conditional_statements_breakup
+			;
 
 conditional_statements_breakup
 			: ELSE statement {label3();}
-			| {label3();};
+			| {label3();}
+			;
 
 iterative_statements 
-			: WHILE '(' {label4();} simple_expression ')' {label1();if($4!=1){yyerror("Condition checking is not of type int\n");exit(0);}} statement {label5();} 
-			| FOR '(' expression ';' {label4();} simple_expression ';' {label1();if($6!=1){yyerror("Condition checking is not of type int\n");exit(0);}} expression ')'statement {label5();} 
-			| {label4();}DO statement WHILE '(' simple_expression ')'{label1();label5();if($6!=1){yyerror("Condition checking is not of type int\n");exit(0);}} ';';
+			: WHILE '(' {label4();} simple_expression ')' {
+					label1();
+					if($4!=1)	yyerror("Condition checking is not of type int\n");
+					}
+				statement { label5(); } 
+			| FOR '(' expression ';' { label4(); } 
+			 simple_expression ';' { label1(); 
+						if($6!=1){ yyerror("Condition checking is not of type int\n"); }
+					} 
+			expression ')' statement { label5(); } 
+			| {label4();} DO statement WHILE '(' simple_expression ')'{
+					label1();
+					label5();
+					if($6!=1)	yyerror("Condition checking is not of type int\n");
+				}
+			';' ;
 return_statement 
-			: RETURN ';' {if(strcmp(currfunctype,"void")) {yyerror("Returning void of a non-void function\n"); exit(0);}}
-			| RETURN expression ';' { 	if(!strcmp(currfunctype, "void"))
-										{ 
-											yyerror("Function is void");
-										}
-
-										if((currfunctype[0]=='i' || currfunctype[0]=='c') && $2!=1)
-										{
-											yyerror("Expression doesn't match return type of function\n"); exit(0);
-										}
-
-									};
+			: RETURN ';' {
+				if(strcmp(currfunctype,"void"))	yerror("Returning void of a non-void function\n");
+				}
+			| RETURN expression ';' { 	
+				if(!strcmp(currfunctype, "void")){ 
+					yyerror("Function is void");
+				}
+				if((currfunctype[0]=='i' || currfunctype[0]=='c') && $2!=1){
+					yyerror("Expression doesn't match return type of function\n");
+				}
+			   }
+			;
 
 break_statement 
 			: BREAK ';' ;
@@ -252,66 +307,73 @@ array_int_declarations_breakup
 
 expression 
 			: mutable assignment_operator {push("=");} expression   {   
-																	  if($1==1 && $4==1) 
-																	  {
-			                                                          $$=1;
-			                                                          } 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);} 
-			                                                          codeassign();
-			                                                       }
-			| mutable addition_assignment_operator {push("+=");}expression {  
-																	  if($1==1 && $4==1) 
-			                                                          $$=1; 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);} 
-			                                                          codeassign();
-			                                                       }
-			| mutable subtraction_assignment_operator {push("-=");} expression  {	  
-																	  if($1==1 && $4==1) 
-			                                                          $$=1; 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);} 
-			                                                          codeassign();
-			                                                       }
-			| mutable multiplication_assignment_operator {push("*=");} expression {
-																	  if($1==1 && $4==1) 
-			                                                          $$=1; 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);}
-			                                                          codeassign(); 
-			                                                       }
-			| mutable division_assignment_operator {push("/=");}expression 		{ 
-																	  if($1==1 && $4==1) 
-			                                                          $$=1; 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);} 
-			                                                       }
-			| mutable modulo_assignment_operator {push("%=");}expression 		{ 
-																	  if($1==1 && $3==1) 
-			                                                          $$=1; 
-			                                                          else 
-			                                                          {$$=-1; yyerror("Type mismatch\n"); exit(0);} 
-			                                                          codeassign();
-																	}
-			| mutable increment_operator 							{ push("++");if($1 == 1) $$=1; else $$=-1; genunary();}
-			| mutable decrement_operator  							{push("--");if($1 == 1) $$=1; else $$=-1;}
-			| increment_operator mutable							{ push("++");if($1 == 1) $$=1; else $$=-1; genunary();}
-			| decrement_operator mutable							{push("--");if($1 == 1) $$=1; else $$=-1;}
-			| simple_expression {if($1 == 1) $$=1; else $$=-1;} ;
+									if($1==1 && $4==1)  $$=1;
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n");
+									} 
+			                                                codeassign();
+			                                            }
+			| mutable addition_assignment_operator { push("+="); } expression {  
+									if($1==1 && $4==1)   $$=1; 
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n");
+									} 
+			                                                codeassign();
+			                                         }
+			| mutable subtraction_assignment_operator { push("-="); } expression  {	  
+									if($1==1 && $4==1)	$$=1; 
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n");
+									} 
+			                                                codeassign();
+			                                         }
+			| mutable multiplication_assignment_operator { push("*="); } expression {
+									if($1==1 && $4==1)	$$=1; 
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n");
+									}
+			                                                codeassign(); 
+			                                         }
+			| mutable division_assignment_operator { push("/="); }expression { 
+									if($1==1 && $4==1)	$$=1; 
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n");
+									} 
+			                                                codeassign(); 
+			                                         }
+			| mutable modulo_assignment_operator { push("%="); }expression { 
+									if($1==1 && $3==1)      $$=1; 
+			                                                else {
+										$$=-1;
+										yyerror("Type mismatch\n"); 
+									} 
+			                                                codeassign();
+								}
+			| mutable increment_operator 		{ push("++"); if($1 == 1) $$=1; else $$=-1; genunary(); }
+			| mutable decrement_operator  		{ push("--"); if($1 == 1) $$=1; else $$=-1; }
+			| increment_operator mutable		{ push("++"); if($1 == 1) $$=1; else $$=-1; genunary(); }
+			| decrement_operator mutable		{ push("--"); if($1 == 1) $$=1; else $$=-1; }
+			| simple_expression { if($1 == 1) $$=1; else $$=-1; } ;
 
 
 simple_expression 
-			: simple_expression OR_operator and_expression {push("||");} {if($1 == 1 && $3==1) $$=1; else $$=-1; codegen();}
+			: simple_expression OR_operator and_expression {
+				push("||");} {if($1 == 1 && $3==1) $$=1; else $$=-1; codegen();}
 			| and_expression {if($1 == 1) $$=1; else $$=-1;};
 
 and_expression 
-			: and_expression AND_operator {push("&&");} unary_relation_expression  {if($1 == 1 && $3==1) $$=1; else $$=-1; codegen();}
+			: and_expression AND_operator {push("&&");} 
+			unary_relation_expression  {if($1 == 1 && $3==1) $$=1; else $$=-1; codegen();}
 			  |unary_relation_expression {if($1 == 1) $$=1; else $$=-1;} ;
 
 
 unary_relation_expression 
-			: exclamation_operator {push("!");} unary_relation_expression {if($2==1) $$=1; else $$=-1; codegen();} 
+			: exclamation_operator { push("!"); } unary_relation_expression {if($2==1) $$=1; else $$=-1; codegen();} 
 			| regular_expression {if($1 == 1) $$=1; else $$=-1;} ;
 
 regular_expression 
@@ -319,7 +381,10 @@ regular_expression
 			  | sum_expression {if($1 == 1) $$=1; else $$=-1;} ;
 			
 relational_operators 
-			: greaterthan_assignment_operator {push(">=");} | lessthan_assignment_operator {push("<=");} | greaterthan_operator {push(">");}| lessthan_operator {push("<");}| equality_operator {push("==");}| inequality_operator {push("!=");} ;
+			: greaterthan_assignment_operator {push(">=");} | lessthan_assignment_operator {push("<=");} 
+			| greaterthan_operator {push(">");}| lessthan_operator {push("<");}| equality_operator {push("==");}
+			| inequality_operator {push("!=");}
+			;
 
 sum_expression 
 			: sum_expression sum_operators term  {if($1 == 1 && $3==1) $$=1; else $$=-1; codegen();}
@@ -354,12 +419,14 @@ mutable
 			              else
 			              $$ = -1;
 			              }
-			| array_identifier {if(!checkScope(curid)){printf("%s\n",curid);yyerror("Undeclared\n");exit(0);}} '[' expression ']' 
-			                   {if(getType(curid,0)=='i' || getType(curid,1)== 'c')
+			| array_identifier { if(!checkScope(curid)){
+							printf("%s\n",curid);
+							yyerror("Undeclared\n"); }
+					} '[' expression ']' 
+			                   { if(getType(curid,0)=='i' || getType(curid,1)== 'c')
 			              		$$ = 1;
-			              		else
-			              		$$ = -1;
-			              		};
+						else $$ = -1;
+			              	  };
 
 immutable 
 			: '(' expression ')' {if($2==1) $$=1; else $$=-1;}
@@ -369,29 +436,22 @@ immutable
 call
 			: identifier '('{
 
-			             if(!check_declaration(curid, "Function"))
-			             { yyerror("Function not declared"); exit(0);} 
+			             if(!check_declaration(curid, "Function")){
+					 yyerror("Function not declared"); } 
 			             insertSymbolTableFunc(curid); 
-						 strcpy(currfunccall,curid);
-						 if(getType(curid,0)=='i' || getType(curid,1)== 'c')
-						 {
-			             $$ = 1;
-			             }
-			             else
-			             $$ = -1;
-                         call_params_count=0;
-			             } 
-			             arguments ')' 
-						 { if(strcmp(currfunccall,"printf"))
-							{ 
-								if(getSymbolTableParamsCount(currfunccall)!=call_params_count)
-								{	
-									yyerror("Number of arguments in function call doesn't match number of parameters");
-									exit(8);
-								}
-							}
-							callgen();
-						 };
+				     strcpy(currfunccall,curid);
+				     if(getType(curid,0)=='i' || getType(curid,1)== 'c')
+						$$ = 1;
+			             else       $$ = -1;
+					call_params_count=0; }
+			 arguments ')' { if(strcmp(currfunccall,"printf")){ 
+					   if(getSymbolTableParamsCount(currfunccall)!=call_params_count){	
+					      yyerror("Number of arguments in function call doesn't match number of parameters");
+					   }
+				         }
+				         callgen();  
+			               }
+			;
 
 arguments 
 			: arguments_list | ;
@@ -400,13 +460,15 @@ arguments_list
 			: arguments_list ',' exp { call_params_count++; }  
 			| exp { call_params_count++; };
 
-exp : identifier {arggen(1);} | integer_constant {arggen(2);} | string_constant {arggen(3);} | float_constant {arggen(4);} | character_constant {arggen(5);} ;
+exp : identifier {arggen(1);} | integer_constant {arggen(2);} 
+	| string_constant {arggen(3);} | float_constant {arggen(4);} 
+	| character_constant {arggen(5);} ;
 
 constant 
 			: integer_constant 	{  insV(); codegencon(); $$=1; } 
-			| string_constant	{  insV(); codegencon();$$=-1;} 
-			| float_constant	{  insV(); codegencon();} 
-			| character_constant{  insV(); codegencon();$$=1; };
+			| string_constant	{  insV(); codegencon(); $$=-1; } 
+			| float_constant	{  insV(); codegencon(); } 
+			| character_constant	{  insV(); codegencon(); $$=1; } ;
 
 %%
 
@@ -663,17 +725,17 @@ int main(int argc , char **argv)
 	{
 		printf(ANSI_COLOR_GREEN "STATUS: PARSING COMPLETE - VALID" ANSI_COLOR_RESET "\n");
 		int i;
-                for(i=0;i<190;i++)
+                for(i=0;i<160;i++)
                 printf("=");
                 printf("\n");
-		printf("%85s" ANSI_COLOR_CYAN "SYMBOL TABLE" ANSI_COLOR_RESET "\n", " ");
-                for(i=0;i<190;i++)
+		printf("%75s" ANSI_COLOR_CYAN "SYMBOL TABLE" ANSI_COLOR_RESET "\n", " ");
+                for(i=0;i<160;i++)
 		printf("=");
                 printf("\n\n\n");
 		showSymbolTable();
-                printf("\n\n================================================================================\n");
+                printf("\n\n===========================================================================\n");
 		printf("%30s" ANSI_COLOR_CYAN "CONSTANT TABLE" ANSI_COLOR_RESET "\n", " ");
-		printf("================================================================================\n\n\n");
+		printf("===========================================================================\n\n\n");
 		showConstantTable();
 	}
 }
@@ -683,6 +745,19 @@ void yyerror(char *s)
 	printf(ANSI_COLOR_RED "Line no : %d %s at token *%s*\n", yylineno, s, yytext);
 	flag=1;
 	printf(ANSI_COLOR_RED "STATUS: PARSING FAILED - INVALID\n" ANSI_COLOR_RESET);
+	int i;
+        for(i=0;i<160;i++)
+        printf("=");
+        printf("\n");
+	printf("%75s" ANSI_COLOR_CYAN "SYMBOL TABLE" ANSI_COLOR_RESET "\n", " ");
+        for(i=0;i<160;i++)
+		printf("=");
+        printf("\n\n\n");
+	showSymbolTable();
+        printf("\n\n===========================================================================\n");
+	printf("%30s" ANSI_COLOR_CYAN "CONSTANT TABLE" ANSI_COLOR_RESET "\n", " ");
+	printf("===========================================================================\n\n\n");
+	showConstantTable();
 	exit(7);
 }
 
