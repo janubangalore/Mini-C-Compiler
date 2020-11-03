@@ -1,5 +1,55 @@
-# Intermediate Code Generation
+# Syntax Analyzer
 
-## To run all tests
-- Make sure all the tests are in `tests` directory with names as `test1.c`, `test2.c` etc.
-- `./run.sh`
+## Execution
+
+### Windows
+```
+cd Code
+rm a
+lex ICG_Scanner.l
+yacc -dy ICG_Parser.y
+gcc y.tab.c -w -o a
+a <input c-filename>
+```
+
+### Gitbash
+```
+cd Code
+rm ./a
+lex ICG_Scanner.l
+yacc -dy ICG_Parser.y
+gcc y.tab.c -w -o a
+./a <input c-filename>
+```
+
+### Linux/Ubuntu
+```
+cd Code
+rm ./a.out
+lex ICG_Scanner.l
+yacc -dy SemanticParser.y
+gcc y.tab.c -ll -ly -w
+./a.out <input c-filename>
+```
+
+## Test Cases Execution
+
+### Windows
+```
+cd Code
+bash 'run-Windows.sh'
+```
+
+### GitBash
+```
+cd Code
+bash 'run-GB.sh'
+
+```
+
+### Linux/Ubuntu
+```
+cd Code
+bash 'run-Linux.sh'
+
+```
